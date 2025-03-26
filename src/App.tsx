@@ -9,16 +9,19 @@ import {
   Typography,
   IconButton,
   Fab,
-  useMediaQuery
+  useMediaQuery,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
-  Add as AddIcon
+  Add as AddIcon,
 } from '@mui/icons-material';
 import { lightTheme, darkTheme } from './theme';
 import { HabitGrid } from './components/HabitGrid/HabitGrid';
 import { HabitForm } from './components/HabitForm/HabitForm';
+import { Tutorial } from './components/Tutorial/Tutorial';
 import { storageService } from './services/storage';
 import { streakService } from './services/streakService';
 import { Habit } from './types';
@@ -29,39 +32,54 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | undefined>();
   const [isDarkMode, setIsDarkMode] = useState(prefersDarkMode);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
-      const storedHabits = await storageService.getHabits();
-      const prefs = await storageService.getPreferences();
-      setIsDarkMode(prefs.theme === 'dark');
-      setHabits(storedHabits);
+      try {
+        setIsLoading(true);
+        const storedHabits = await storageService.getHabits();
+        const prefs = await storageService.getPreferences();
+        setIsDarkMode(prefs.theme === 'dark');
+        setHabits(storedHabits);
+        setIsTutorialOpen(prefs.showTutorial);
+      } catch (err) {
+        setError('Failed to load your habits. Please try refreshing the page.');
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadData();
   }, []);
 
   const handleHabitComplete = async (habitId: string, date: string, value?: number) => {
-    const habitIndex = habits.findIndex(h => h.id === habitId);
-    if (habitIndex === -1) return;
+    try {
+      const habitIndex = habits.findIndex(h => h.id === habitId);
+      if (habitIndex === -1) return;
 
-    const habit = habits[habitIndex];
-    const newHabit = {
-      ...habit,
-      completions: {
-        ...habit.completions,
-        [date]: {
-          completed: !habit.completions[date]?.completed,
-          value: value ?? habit.completions[date]?.value
+      const habit = habits[habitIndex];
+      const newHabit = {
+        ...habit,
+        completions: {
+          ...habit.completions,
+          [date]: {
+            completed: !habit.completions[date]?.completed,
+            value: value ?? habit.completions[date]?.value
+          }
         }
-      }
-    };
+      };
 
-    const updatedHabit = streakService.updateHabitStreak(newHabit);
-    const newHabits = [...habits];
-    newHabits[habitIndex] = updatedHabit;
-    
-    setHabits(newHabits);
-    await storageService.saveHabits(newHabits);
+      const updatedHabit = streakService.updateHabitStreak(newHabit);
+      const newHabits = [...habits];
+      newHabits[habitIndex] = updatedHabit;
+      
+      setHabits(newHabits);
+      await storageService.saveHabits(newHabits);
+    } catch (err) {
+      setError('Failed to update habit. Please try again.');
+    }
   };
 
   const handleSaveHabit = async (habitData: Habit) => {
@@ -77,9 +95,13 @@ function App() {
         const updatedHabits = await storageService.getHabits();
         setHabits(updatedHabits);
       }
-    } catch (error) {
-      // TODO: Add error handling
-      console.error('Error saving habit:', error);
+      handleCloseForm();
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('limited to 6 habits')) {
+        setError('Free version is limited to 6 habits. Upgrade to add more!');
+      } else {
+        setError('Failed to save habit. Please try again.');
+      }
     }
   };
 
@@ -91,6 +113,14 @@ function App() {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingHabit(undefined);
+  };
+
+  const handleCloseTutorial = async () => {
+    setIsTutorialOpen(false);
+    await storageService.savePreferences({
+      theme: isDarkMode ? 'dark' : 'light',
+      showTutorial: false
+    });
   };
 
   const toggleTheme = async () => {
@@ -118,11 +148,17 @@ function App() {
         </AppBar>
 
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <HabitGrid
-            habits={habits}
-            onHabitComplete={handleHabitComplete}
-            onEditHabit={handleEditHabit}
-          />
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Typography>Loading your habits...</Typography>
+            </Box>
+          ) : (
+            <HabitGrid
+              habits={habits}
+              onHabitComplete={handleHabitComplete}
+              onEditHabit={handleEditHabit}
+            />
+          )}
         </Container>
 
         <Fab
@@ -144,6 +180,22 @@ function App() {
           onSave={handleSaveHabit}
           editHabit={editingHabit}
         />
+
+        <Tutorial
+          open={isTutorialOpen}
+          onClose={handleCloseTutorial}
+        />
+
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );
