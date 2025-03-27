@@ -20,6 +20,8 @@ export interface Habit {
 export interface UserPreferences {
   theme: 'light' | 'dark';
   showTutorial: boolean;
+  name?: string;
+  weeklyTrackGoal?: number;
 }
 
 export type Tag = {

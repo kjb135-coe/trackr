@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   ThemeProvider,
   CssBaseline,
@@ -12,19 +12,29 @@ import {
   useMediaQuery,
   Snackbar,
   Alert,
+  Fade,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
   Add as AddIcon,
+  Settings as SettingsIcon,
+  TrackChanges as GoalIcon,
 } from '@mui/icons-material';
 import { lightTheme, darkTheme } from './theme';
 import { HabitGrid } from './components/HabitGrid/HabitGrid';
 import { HabitForm } from './components/HabitForm/HabitForm';
 import { Tutorial } from './components/Tutorial/Tutorial';
+import { WeeklyProgress } from './components/WeeklyProgress/WeeklyProgress';
+import { WeeklyGoalDialog } from './components/WeeklyGoalDialog/WeeklyGoalDialog';
 import { storageService } from './services/storage';
 import { streakService } from './services/streakService';
 import { Habit } from './types';
+import { startOfWeek, addDays, isFuture, format } from 'date-fns';
 
 function App() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -35,6 +45,10 @@ function App() {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState<string>('');
+  const [weeklyGoal, setWeeklyGoal] = useState<number>(0);
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const [settingsAnchor, setSettingsAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -45,6 +59,8 @@ function App() {
         setIsDarkMode(prefs.theme === 'dark');
         setHabits(storedHabits);
         setIsTutorialOpen(prefs.showTutorial);
+        setUserName(prefs.name || '');
+        setWeeklyGoal(prefs.weeklyTrackGoal || Math.ceil(storedHabits.length * 7 * 0.7));
       } catch (err) {
         setError('Failed to load your habits. Please try refreshing the page.');
       } finally {
@@ -115,12 +131,17 @@ function App() {
     setEditingHabit(undefined);
   };
 
-  const handleCloseTutorial = async () => {
+  const handleCloseTutorial = async (shouldOpenHabitForm = false) => {
     setIsTutorialOpen(false);
     await storageService.savePreferences({
       theme: isDarkMode ? 'dark' : 'light',
-      showTutorial: false
+      showTutorial: false,
+      name: userName,
+      weeklyTrackGoal: weeklyGoal
     });
+    if (shouldOpenHabitForm) {
+      setIsFormOpen(true);
+    }
   };
 
   const toggleTheme = async () => {
@@ -132,6 +153,82 @@ function App() {
     });
   };
 
+  const handleSaveWeeklyGoal = async (goal: number) => {
+    setWeeklyGoal(goal);
+    setIsGoalDialogOpen(false);
+    await storageService.savePreferences({
+      theme: isDarkMode ? 'dark' : 'light',
+      showTutorial: false,
+      name: userName,
+      weeklyTrackGoal: goal
+    });
+  };
+
+  const handleUpdateName = async (name: string) => {
+    setUserName(name);
+    await storageService.savePreferences({
+      theme: isDarkMode ? 'dark' : 'light',
+      showTutorial: false,
+      name: name,
+      weeklyTrackGoal: weeklyGoal
+    });
+  };
+
+  const weeklyStats = useMemo(() => {
+    if (habits.length === 0) return { currentTracks: 0, maxPossibleTracks: 0 };
+    
+    const startDate = startOfWeek(new Date());
+    const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
+    const today = new Date();
+    
+    let totalPossible = 0;
+    let totalCompleted = 0;
+
+    habits.forEach(habit => {
+      weekDays.forEach(day => {
+        if (!isFuture(day)) {
+          totalPossible++;
+          const dateStr = format(day, 'yyyy-MM-dd');
+          if (habit.completions[dateStr]?.completed) {
+            totalCompleted++;
+          }
+        }
+      });
+    });
+
+    return {
+      currentTracks: totalCompleted,
+      maxPossibleTracks: totalPossible
+    };
+  }, [habits]);
+
+  const handleDeleteHabit = async (habitId: string) => {
+    try {
+      await storageService.deleteHabit(habitId);
+      setHabits(habits.filter(h => h.id !== habitId));
+    } catch (err) {
+      setError('Failed to delete habit. Please try again.');
+    }
+  };
+
+  const handleSettingsClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSettingsAnchor(event.currentTarget);
+  };
+
+  const handleSettingsClose = () => {
+    setSettingsAnchor(null);
+  };
+
+  const handleAddHabit = () => {
+    setSettingsAnchor(null);
+    setIsFormOpen(true);
+  };
+
+  const handleOpenGoalDialog = () => {
+    setSettingsAnchor(null);
+    setIsGoalDialogOpen(true);
+  };
+
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <CssBaseline />
@@ -139,11 +236,40 @@ function App() {
         <AppBar position="static" color="inherit" elevation={1}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Trackr
+              {userName ? `${userName}'s Trackr` : 'Trackr'}
             </Typography>
-            <IconButton onClick={toggleTheme} color="inherit">
-              {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
+            <IconButton 
+              onClick={handleSettingsClick}
+              color="inherit"
+            >
+              <SettingsIcon />
             </IconButton>
+            <Menu
+              anchorEl={settingsAnchor}
+              open={Boolean(settingsAnchor)}
+              onClose={handleSettingsClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem onClick={handleAddHabit}>
+                <ListItemIcon>
+                  <AddIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Add Habit</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={handleOpenGoalDialog}>
+                <ListItemIcon>
+                  <GoalIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Set Weekly Goal</ListItemText>
+              </MenuItem>
+            </Menu>
           </Toolbar>
         </AppBar>
 
@@ -153,26 +279,44 @@ function App() {
               <Typography>Loading your habits...</Typography>
             </Box>
           ) : (
-            <HabitGrid
-              habits={habits}
-              onHabitComplete={handleHabitComplete}
-              onEditHabit={handleEditHabit}
-            />
+            <Fade in={!isLoading} timeout={500}>
+              <Box>
+                <WeeklyProgress
+                  currentTracks={weeklyStats.currentTracks}
+                  goalTracks={weeklyGoal}
+                  maxPossibleTracks={weeklyStats.maxPossibleTracks}
+                />
+                <HabitGrid
+                  habits={habits}
+                  onHabitComplete={handleHabitComplete}
+                  onEditHabit={handleEditHabit}
+                  onDeleteHabit={handleDeleteHabit}
+                />
+              </Box>
+            </Fade>
           )}
         </Container>
 
         <Fab
-          color="primary"
-          aria-label="add habit"
-          onClick={() => setIsFormOpen(true)}
+          color="inherit"
+          aria-label="toggle theme"
+          onClick={toggleTheme}
           sx={{
             position: 'fixed',
             bottom: 16,
             right: 16,
+            bgcolor: 'background.paper',
           }}
         >
-          <AddIcon />
+          {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
         </Fab>
+
+        <Tutorial
+          open={isTutorialOpen}
+          onClose={handleCloseTutorial}
+          onNameChange={handleUpdateName}
+          onWeeklyGoalChange={handleSaveWeeklyGoal}
+        />
 
         <HabitForm
           open={isFormOpen}
@@ -181,9 +325,12 @@ function App() {
           editHabit={editingHabit}
         />
 
-        <Tutorial
-          open={isTutorialOpen}
-          onClose={handleCloseTutorial}
+        <WeeklyGoalDialog
+          open={isGoalDialogOpen}
+          onClose={() => setIsGoalDialogOpen(false)}
+          onSave={handleSaveWeeklyGoal}
+          currentGoal={weeklyGoal}
+          maxPossibleTracks={weeklyStats.maxPossibleTracks}
         />
 
         <Snackbar

@@ -18,7 +18,7 @@ import { Habit, Tag, DEFAULT_TAGS } from '../../types';
 interface HabitFormProps {
   open: boolean;
   onClose: () => void;
-  onSave: (habit: Habit) => void;
+  onSave: (habitData: Habit) => void;
   editHabit?: Habit;
 }
 
