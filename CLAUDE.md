@@ -132,6 +132,43 @@ if (date < appInstallDate) {
 - **Lint**: `npm run lint`
 - **Type Check**: `npm run typecheck`
 
+## Testing Requirements
+
+### Unit Testing for Major Changes
+When implementing **big functionality or significant UI changes**, Claude MUST:
+
+1. **Create comprehensive unit tests** for the new functionality
+2. **Test all critical paths** and edge cases
+3. **Ensure 100% test coverage** for new components/functions
+4. **Continue working until ALL tests pass green** - do not stop until this is achieved
+5. **Clean up test files** after successful implementation (remove debugging artifacts, organize test structure)
+
+**What constitutes "big functionality/UI changes":**
+- New components or major component rewrites
+- New features (like calendar views, progress tracking systems)
+- State management changes affecting multiple components
+- Data structure modifications
+- Complex user interactions or animations
+- Integration of new libraries or frameworks
+
+**What does NOT require unit tests:**
+- Small bug fixes (typos, styling tweaks)
+- Minor UI adjustments (color changes, spacing)
+- Simple refactoring without functional changes
+- Documentation updates
+
+**Testing Framework:**
+- Use existing testing setup in the project (check for Jest, Vitest, React Testing Library)
+- If no testing framework exists, set up Vitest with React Testing Library
+- Focus on testing behavior, not implementation details
+- Mock external dependencies appropriately
+
+**Test Organization:**
+- Place test files in `__tests__` directories or use `.test.tsx` suffix
+- Group related tests logically
+- Use descriptive test names that explain the expected behavior
+- Include both positive and negative test cases
+
 ## File Structure Priority
 
 When working on features, prioritize these key files:
