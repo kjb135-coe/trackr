@@ -5,6 +5,9 @@ import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from 'dat
 import { HabitV2, UserPreferencesV2 } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 
+// Debug grid alignment (dev-only)
+const DEBUG_GRID = new URLSearchParams(window.location.search).has('debugGrid');
+
 interface HabitCalendarGridProps {
   habits: HabitV2[];
   preferences: UserPreferencesV2;
@@ -154,16 +157,6 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
     return isSameDay(date, today);
   };
 
-  // const getTimeBasedGreeting = () => {
-  //   const hour = currentDate.getHours();
-  //   if (hour < 12) return { text: 'Good morning', icon: Sun };
-  //   if (hour < 17) return { text: 'Good afternoon', icon: Sun };
-  //   if (hour < 21) return { text: 'Good evening', icon: Cloud };
-  //   return { text: 'Good night', icon: Moon };
-  // };
-
-  // const { icon: GreetingIcon } = getTimeBasedGreeting();
-
   // Calculate weekly progress
   const calculateWeeklyProgress = () => {
     const totalPossibleCompletions = habits.length * 7; // 7 days per week
@@ -181,6 +174,36 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   };
 
   const weeklyProgress = calculateWeeklyProgress();
+
+  // Debug grid alignment (dev-only)
+  useEffect(() => {
+    if (!DEBUG_GRID) return;
+    
+    const checkAlignment = () => {
+      // get header day cells & first body row day cells
+      const headerDays = Array.from(document.querySelectorAll('[data-grid=header] [data-col=day]')) as HTMLElement[];
+      const firstRowDays = Array.from(document.querySelectorAll('[data-grid=row]:first-of-type [data-col=day]')) as HTMLElement[];
+
+      headerDays.forEach((hd, i) => {
+        const bd = firstRowDays[i];
+        if (!bd) return;
+        const x1 = Math.round(hd.getBoundingClientRect().left);
+        const x2 = Math.round(bd.getBoundingClientRect().left);
+        if (Math.abs(x1 - x2) > 1) {
+          console.warn('Grid misalignment at column', i, { headerLeft: x1, bodyLeft: x2 });
+        }
+      });
+    };
+
+    // Check after initial render and on resize
+    const timer = setTimeout(checkAlignment, 100);
+    window.addEventListener('resize', checkAlignment);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkAlignment);
+    };
+  }, [habits.length]);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-8">
@@ -216,11 +239,23 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
             </div>
             <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-blue-500 rounded-full"
+                className="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 rounded-full relative overflow-hidden"
                 initial={{ width: 0 }}
                 animate={{ width: `${weeklyProgress.percentage}%` }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-              />
+              >
+                {/* Animated shine effect for better visual feedback */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '100%' }}
+                  transition={{ 
+                    duration: 1.5, 
+                    delay: 1,
+                    ease: "easeInOut"
+                  }}
+                />
+              </motion.div>
             </div>
           </motion.div>
         )}
@@ -232,6 +267,12 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
         className={`${theme.card} overflow-hidden shadow-xl`}
+        style={{
+          '--grid-cols': 'minmax(160px, 200px) repeat(7, 1fr)',
+          '--accent': theme.isDark ? '#60a5fa' : '#3b82f6',
+          '--grid-bg': theme.isDark ? '#1e293b' : '#ffffff',
+          '--divider': theme.isDark ? '#475569' : '#e2e8f0'
+        } as React.CSSProperties}
       >
         {/* Week Navigation Row - spans full width */}
         <div className={`border-b ${theme.calendarHeader}`}>
@@ -253,7 +294,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
             </button>
             <button 
               onClick={handleTodayClick}
-              className={`ml-4 ${theme.btnPrimary} text-sm`}
+              className={`ml-4 px-3 py-1 text-sm ${theme.isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} hover:underline transition-colors`}
             >
               Today
             </button>
@@ -261,18 +302,20 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
         </div>
         
         {/* Header Row - Habits and Days */}
-        <div className={`grid grid-cols-8 border-b ${theme.calendarHeader}`}>
+        <div className={`grid border-b ${theme.calendarHeader}`} style={{ gridTemplateColumns: 'var(--grid-cols)' }} data-grid="header">
           <div className={`p-4 font-medium ${theme.textPrimary}`}>
             Habits
           </div>
           {days.map((date) => (
             <div
               key={date.toISOString()}
-              className={`p-4 text-center border-l ${theme.calendarCell} font-medium transition-all duration-200 ${
+              className={`p-4 text-center font-medium transition-all duration-200 ${
                 isToday(date) 
                   ? `${theme.calendarToday} ${theme.isDark ? 'text-blue-300' : 'text-blue-700'}`
                   : theme.textSecondary
               }`}
+              style={{ borderLeft: '1px solid var(--divider)' }}
+              data-col="day"
             >
               <div className="text-xs uppercase tracking-wider mb-1 opacity-75">
                 {format(date, 'EEE')}
@@ -294,10 +337,12 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.3, delay: habitIndex * 0.05 }}
-              className={`grid grid-cols-8 border-b last:border-b-0 ${theme.calendarCell} group hover:shadow-sm transition-all duration-200`}
+              className={`grid border-b last:border-b-0 ${theme.calendarCell} group hover:shadow-sm transition-all duration-200`}
+              style={{ gridTemplateColumns: 'var(--grid-cols)' }}
+              data-grid="row"
             >
               {/* Habit Name Cell */}
-              <div className={`p-4 border-r ${theme.calendarCell} relative`}>
+              <div className={`p-4 ${theme.calendarCell} relative min-h-[48px] flex items-center`}>
                 {editingHabit === habit.id ? (
                   <input
                     type="text"
@@ -364,14 +409,14 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                 const isFocused = focusedCell?.habitIndex === habitIndex && focusedCell?.dayIndex === dayIndex;
                 
                 return (
-                  <motion.div
+                  <div
                     key={cellKey}
                     tabIndex={0}
-                    className={`p-4 border-l ${theme.calendarCell} flex items-center justify-center cursor-pointer relative transition-all duration-200 min-h-[48px] ${
+                    className={`cell p-4 flex items-center justify-center cursor-pointer relative min-h-[48px] overflow-hidden ${
                       future ? 'cursor-not-allowed opacity-40' : ''
-                    } ${isToday(date) ? 'bg-blue-500/5 dark:bg-blue-400/5' : ''} ${
-                      isFocused ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-800' : ''
-                    }`}
+                    } ${isToday(date) ? 'bg-blue-500/5 dark:bg-blue-400/5' : ''}`}
+                    style={{ borderLeft: '1px solid var(--divider)' }}
+                    data-col="day"
                     onClick={() => {
                       if (!future) {
                         handleCellClick(habit.id, date);
@@ -381,8 +426,6 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                     onFocus={() => setFocusedCell({ habitIndex, dayIndex })}
                     onMouseEnter={() => !future && setHoveredCell({ habitId: habit.id, date: format(date, 'yyyy-MM-dd') })}
                     onMouseLeave={() => setHoveredCell(null)}
-                    whileHover={!future ? { scale: 1.02 } : {}}
-                    whileTap={!future ? { scale: 0.98 } : {}}
                   >
                     <motion.div
                       className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 border-2 ${
@@ -401,6 +444,8 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                         stiffness: 400, 
                         damping: 30
                       }}
+                      whileHover={!future ? { scale: 1.02 } : {}}
+                      whileTap={!future ? { scale: 0.98 } : {}}
                     >
                       <AnimatePresence mode="wait">
                         {completed && (
@@ -427,7 +472,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                         )}
                       </AnimatePresence>
                     </motion.div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </motion.div>

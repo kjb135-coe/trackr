@@ -6,6 +6,7 @@ import { useThemeClasses } from '../../hooks/useThemeClasses';
 import { WeeklyProgress } from '../features/WeeklyProgress';
 import { HabitInsights } from '../features/HabitInsights';
 import { SocialHub } from '../features/SocialHub';
+import { WeeklyGoalModal } from './WeeklyGoalModal';
 import { HabitV2 } from '../../types';
 import { useHabitStore } from '../../stores/habitStore';
 
@@ -99,14 +100,27 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, 
                 <label className={`text-xs font-medium ${theme.textSecondary} uppercase tracking-wide block mb-2`}>
                   Goals
                 </label>
-                <button
-                  onClick={() => setShowGoalModal(true)}
-                  className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} 
-                    w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors`}
-                >
-                  <TrendingUp className="w-4 h-4" />
-                  {preferences.weeklyGoal ? `Weekly Goal (${preferences.weeklyGoal}%)` : 'Set Weekly Goal'}
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setActiveFeature('weekly');
+                      setIsOpen(false);
+                    }}
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} 
+                      w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    Weekly Progress
+                  </button>
+                  <button
+                    onClick={() => setShowGoalModal(true)}
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} 
+                      w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    {preferences.weeklyGoal ? `Set Goal (${preferences.weeklyGoal}%)` : 'Set Weekly Goal'}
+                  </button>
+                </div>
               </div>
 
               {/* Future Features - De-emphasized */}
@@ -153,6 +167,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, 
         )}
       </AnimatePresence>
 
+      {/* Goal Modal */}
+      <WeeklyGoalModal
+        isOpen={showGoalModal}
+        onClose={() => setShowGoalModal(false)}
+        currentGoal={preferences.weeklyGoal || 85}
+        onSave={handleGoalUpdate}
+      />
+      
       {/* Feature Modals */}
       <WeeklyProgress 
         isOpen={activeFeature === 'weekly'} 

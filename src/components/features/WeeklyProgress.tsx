@@ -144,7 +144,7 @@ export const WeeklyProgress: React.FC<WeeklyProgressProps> = ({ isOpen, onClose 
               value={activeMetric.goal}
               onChange={(e) => {
                 // Update the goal in the metrics object (in a real app, this would save to storage)
-                console.log('Goal updated to:', e.target.value);
+                // Goal updates would be handled here
               }}
               className="flex-1"
             />
