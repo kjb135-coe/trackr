@@ -6,6 +6,7 @@ import { SimpleHabitModal } from './components/calendar/SimpleHabitModal';
 import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useThemeClasses } from './hooks/useThemeClasses';
+import { ControlPanel } from './components/ui';
 
 function AppContent() {
   const { 
@@ -77,6 +78,9 @@ function AppContent() {
 
   return (
     <div className="min-h-screen transition-all duration-300">
+      {/* Control Panel */}
+      <ControlPanel onAddHabit={handleAddHabit} />
+
       {/* Main Content */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -87,7 +91,6 @@ function AppContent() {
           habits={habits}
           preferences={preferences}
           onToggleCompletion={handleToggleCompletion}
-          onAddHabit={handleAddHabit}
           onEditHabit={handleEditHabit}
           onDeleteHabit={handleDeleteHabit}
         />
@@ -125,6 +128,42 @@ function AppContent() {
           </div>
         </motion.div>
       )}
+
+      {/* Contact Section */}
+      <motion.footer
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="fixed bottom-4 right-4 flex items-center gap-3 text-xs z-40"
+      >
+        <div className={`${theme.isDark ? 'text-gray-500' : 'text-gray-400'} flex items-center gap-3`}>
+          <a
+            href="https://x.com/kc_e_e"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors`}
+            aria-label="Follow on X"
+          >
+            𝕏
+          </a>
+          <a
+            href="https://www.linkedin.com/in/keegan-borig-0a100514a/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors`}
+            aria-label="Connect on LinkedIn"
+          >
+            in
+          </a>
+          <a
+            href="mailto:keeganborig@gmail.com"
+            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors`}
+            aria-label="Send email"
+          >
+            ✉
+          </a>
+        </div>
+      </motion.footer>
     </div>
   );
 }

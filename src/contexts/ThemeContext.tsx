@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useHabitStore } from '../stores/habitStore';
 
-type Theme = 'light' | 'dark' | 'auto';
+type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
@@ -25,7 +25,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     const getEffectiveTheme = (): 'light' | 'dark' => {
-      if (preferences.theme === 'auto') {
+      // If no theme is set in preferences, use system preference (auto behavior)
+      if (!preferences.theme) {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       return preferences.theme === 'dark' ? 'dark' : 'light';
@@ -45,10 +46,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     updateEffectiveTheme();
 
-    // Listen for system theme changes
+    // Listen for system theme changes only if no manual theme is set
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
-      if (preferences.theme === 'auto') {
+      if (!preferences.theme) {
         updateEffectiveTheme();
       }
     };
@@ -62,7 +63,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <ThemeContext.Provider value={{ theme: preferences.theme, effectiveTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: preferences.theme || 'light', effectiveTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

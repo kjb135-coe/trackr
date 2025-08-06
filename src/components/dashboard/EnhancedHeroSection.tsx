@@ -4,18 +4,6 @@ import { ProgressRing } from '../ui';
 import { useHabitStore } from '../../stores/habitStore';
 import { habitService } from '../../services/habitService';
 
-const MOTIVATIONAL_QUOTES = [
-  "Small daily improvements lead to staggering long-term results.",
-  "Success is the sum of small efforts repeated day in and day out.",
-  "You don't have to be great to get started, but you have to get started to be great.",
-  "The secret of getting ahead is getting started.",
-  "Excellence is not a skill, it's an attitude.",
-  "Progress, not perfection.",
-  "Every expert was once a beginner.",
-  "Your only limit is your mind.",
-  "Great things never come from comfort zones.",
-  "Dream it. Wish it. Do it."
-];
 
 export const EnhancedHeroSection: React.FC = () => {
   const { habits, preferences } = useHabitStore();
@@ -42,16 +30,6 @@ export const EnhancedHeroSection: React.FC = () => {
     return 'from-slate-800 via-purple-900 to-indigo-900'; // Late night
   };
 
-  const getRandomQuote = () => {
-    // Use date as seed for consistent quote per day
-    const today = new Date().toDateString();
-    const seedHash = today.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    const index = Math.abs(seedHash) % MOTIVATIONAL_QUOTES.length;
-    return MOTIVATIONAL_QUOTES[index];
-  };
 
   const greeting = getTimeBasedGreeting();
 
@@ -107,20 +85,6 @@ export const EnhancedHeroSection: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Motivational Quote */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">💭</span>
-            <p className="text-lg italic text-slate-700 font-medium">
-              "{getRandomQuote()}"
-            </p>
-          </div>
-        </motion.div>
       </div>
     </div>
   );

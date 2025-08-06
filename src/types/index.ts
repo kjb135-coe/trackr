@@ -27,7 +27,7 @@ export interface CompletionData {
 }
 
 export interface UserPreferencesV2 {
-  theme: 'light' | 'dark' | 'auto';
+  theme?: 'light' | 'dark';
   showOnboarding: boolean;
   name?: string;
   weeklyGoal?: number;

@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, MoreHorizontal, Edit2, Trash2, Sun, Moon, Cloud, Sparkles } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2, Sun, Moon, Cloud, Sparkles } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { HabitV2, UserPreferencesV2 } from '../../types';
-import { ThemeToggle } from '../ui/ThemeToggle';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 
 interface HabitCalendarGridProps {
   habits: HabitV2[];
   preferences: UserPreferencesV2;
   onToggleCompletion: (habitId: string, date: string) => void;
-  onAddHabit: () => void;
   onEditHabit: (habit: HabitV2) => void;
   onDeleteHabit: (habitId: string) => void;
 }
@@ -19,7 +17,6 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   habits,
   preferences,
   onToggleCompletion,
-  onAddHabit,
   onEditHabit,
   onDeleteHabit
 }) => {
@@ -28,8 +25,22 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   const [editValue, setEditValue] = useState('');
   const [hoveredCell, setHoveredCell] = useState<{ habitId: string; date: string } | null>(null);
   const [habitMenuOpen, setHabitMenuOpen] = useState<string | null>(null);
+  const [currentDate, setCurrentDate] = useState(() => new Date());
 
-  const today = new Date();
+  // Update current date every minute to catch day/week changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      // Only update if the date actually changed (to avoid unnecessary re-renders)
+      if (format(now, 'yyyy-MM-dd') !== format(currentDate, 'yyyy-MM-dd')) {
+        setCurrentDate(now);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [currentDate]);
+
+  const today = currentDate;
   const startDate = startOfWeek(today, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 
@@ -82,23 +93,13 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   };
 
   const getTimeBasedGreeting = () => {
-    const hour = new Date().getHours();
+    const hour = currentDate.getHours();
     if (hour < 12) return { text: 'Good morning', icon: Sun };
     if (hour < 17) return { text: 'Good afternoon', icon: Sun };
     if (hour < 21) return { text: 'Good evening', icon: Cloud };
     return { text: 'Good night', icon: Moon };
   };
 
-  const getMotivationalQuote = () => {
-    const quotes = [
-      "Small daily improvements lead to stunning results.",
-      "Progress over perfection, always.",
-      "Every habit is a vote for the person you want to become.",
-      "Consistency is the mother of mastery.",
-      "Your future self will thank you for starting today."
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  };
 
   const { text: greetingText, icon: GreetingIcon } = getTimeBasedGreeting();
   const userName = preferences.name || 'there';
@@ -128,14 +129,6 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
             </h1>
           </motion.div>
           
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className={`${theme.textSecondary} text-lg max-w-2xl mx-auto mb-6`}
-          >
-            {getMotivationalQuote()}
-          </motion.p>
           
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -150,33 +143,16 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
           </motion.div>
         </div>
         
-        {/* Controls */}
-        <div className="flex items-center justify-between">
+        {/* Title */}
+        <div className="text-center">
           <motion.h2 
             className={`text-2xl font-semibold ${theme.textPrimary}`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             This Week
           </motion.h2>
-          
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            
-            <motion.button
-              onClick={onAddHabit}
-              className={`${theme.btnPrimary} flex items-center gap-2 shadow-lg hover:shadow-xl`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Plus className="w-5 h-5" />
-              <span className="font-medium">Add Habit</span>
-            </motion.button>
-          </div>
         </div>
       </motion.div>
 
@@ -378,17 +354,8 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
               Ready to build great habits?
             </h3>
             <p className={`${theme.textSecondary} text-lg mb-8 max-w-md mx-auto`}>
-              Start your journey towards better daily routines. Every expert was once a beginner.
+              Start your journey towards better daily routines. Use the settings button in the top-right corner to add your first habit.
             </p>
-            <motion.button
-              onClick={onAddHabit}
-              className={`${theme.btnPrimary} text-lg px-8 py-4 shadow-xl hover:shadow-2xl`}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Plus className="w-6 h-6 mr-2" />
-              Create Your First Habit
-            </motion.button>
           </motion.div>
         )}
       </motion.div>

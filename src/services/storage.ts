@@ -106,7 +106,6 @@ export class StorageService {
 
   async getPreferences(): Promise<UserPreferencesV2> {
     return await this.getChromeStorage<UserPreferencesV2>(STORAGE_KEYS.PREFERENCES, {
-      theme: 'auto',
       showOnboarding: true,
       celebrationLevel: 'normal',
       insights: true

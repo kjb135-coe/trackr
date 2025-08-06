@@ -31,11 +31,10 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
   // Initial state
   habits: [],
   preferences: {
-    theme: 'auto',
     showOnboarding: true,
     celebrationLevel: 'normal',
     insights: true,
-  },
+  } as UserPreferencesV2,
   onboarding: {
     currentStep: 'welcome',
     userName: '',

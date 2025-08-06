@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 
@@ -11,7 +11,6 @@ export const ThemeToggle: React.FC = () => {
   const themes = [
     { key: 'light' as const, label: 'Light', icon: Sun },
     { key: 'dark' as const, label: 'Dark', icon: Moon },
-    { key: 'auto' as const, label: 'Auto', icon: Monitor },
   ];
 
   return (
