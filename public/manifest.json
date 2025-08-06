@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Trackr - Habit Tracking",
-  "description": "Track your daily habits right in your new tab",
-  "version": "1.0.0",
+  "name": "Trackr 2.0 - Smart Habit Tracking",
+  "description": "Transform your new tab into a beautiful, intelligent habit tracking dashboard",
+  "version": "2.0.0",
   "permissions": [
     "storage"
   ],
@@ -13,5 +13,8 @@
     "16": "favicon.ico",
     "48": "logo192.png",
     "128": "logo512.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }
