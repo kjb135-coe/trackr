@@ -141,6 +141,21 @@
   .completion-checked-dark {
     @apply border-2 border-blue-500 bg-blue-500;
   }
+
+  /* Calendar cell focus ring */
+  .cell {
+    position: relative;
+    outline: none;
+  }
+
+  .cell:focus-visible::after {
+    content: "";
+    position: absolute;
+    inset: 3px;           /* ring inside, avoids hitting borders */
+    border-radius: 8px;   /* match your cell radius */
+    border: 2px solid var(--accent);
+    pointer-events: none;
+  }
 }
 
 @layer utilities {

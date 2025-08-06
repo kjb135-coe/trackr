@@ -29,13 +29,18 @@ Trackr is a modern, elegant habit tracking React application built for personal 
 ### Key Features Implemented
 
 - **Weekly Habit Tracking**: Grid-based interface showing 7 days with completion status
-- **Monthly Calendar View**: Full-screen historical view with color-coded completion rates
-- **Enhanced Progress Bar**: Gradient-filled progress tracking with animations and pulsing effects
+- **Inline Week Navigation**: Clean navigation controls (← Aug 4–10 → • Today) in dedicated row above weekday headers
+- **Conditional Progress Bar**: Animated progress indicator that only appears when weekly goal is set
+- **Weekly Goal Modal**: Professional popup interface for setting weekly completion targets (50-100%)
+- **Monthly Calendar View**: Dense, full-screen historical view with color-coded completion rates
+- **Enhanced Grid Interactions**: Full-cell hit targets (≥48px) with keyboard navigation (arrow keys, space/enter)
+- **Today Column Highlighting**: Subtle visual distinction for current day's habits
+- **Collapsible Control Panel**: Organized settings panel (collapsed by default) with proper button hierarchy
 - **Smart Tooltips**: Context-aware positioning that prevents screen cutoffs
-- **Theme Support**: Dark mode as default with light mode toggle
+- **Theme Support**: Dark mode as default with improved contrast ratios and design token system
 - **Installation Date Logic**: Only applies color coding from app installation date forward
 - **Responsive Design**: Works across different screen sizes
-- **Skeleton Features**: WeeklyProgress, BudgetTracker, HabitInsights, TimeTracker, DataExport, SocialHub
+- **Skeleton Features**: WeeklyProgress, HabitInsights, SocialHub (DataExport, TimeTracker, BudgetTracker removed)
 
 ### Data Structure
 
@@ -104,6 +109,21 @@ if (date < appInstallDate) {
 }
 ```
 
+### 6. UI/UX Overhaul (August 2025)
+**Goal**: Make the weekly grid the hero, improve interaction patterns, and enhance accessibility
+**Key Changes**:
+- Moved week navigation to dedicated spanning row above weekday headers
+- Made progress bar conditional - only shows when weekly goal is set with smooth animation
+- Replaced dropdown goal setting with professional modal popup
+- Enhanced grid cells with proper hit targets (≥48px) and keyboard navigation
+- Improved button hierarchy: primary (Add Habit), secondary (Monthly View), tertiary (navigation)
+- Implemented AA-compliant focus rings and contrast ratios
+- Made control panel collapsed by default with gear icon toggle
+- Added design token system for consistent spacing, colors, and typography
+
+**Files Modified**: HabitCalendarGrid.tsx, ControlPanel.tsx, MonthlyCalendarPage.tsx, WeeklyGoalModal.tsx (new), useThemeClasses.ts, tokens.ts (new)
+**Testing**: Comprehensive unit tests added for new functionality (HabitCalendarGrid.test.tsx, WeeklyGoalModal.test.tsx, ControlPanel.test.tsx)
+
 ## Design Patterns & Conventions
 
 ### Color Coding System
@@ -131,6 +151,43 @@ if (date < appInstallDate) {
 - **Build**: `npm run build`
 - **Lint**: `npm run lint`
 - **Type Check**: `npm run typecheck`
+
+## Testing Requirements
+
+### Unit Testing for Major Changes
+When implementing **big functionality or significant UI changes**, Claude MUST:
+
+1. **Create comprehensive unit tests** for the new functionality
+2. **Test all critical paths** and edge cases
+3. **Ensure 100% test coverage** for new components/functions
+4. **Continue working until ALL tests pass green** - do not stop until this is achieved
+5. **Clean up test files** after successful implementation (remove debugging artifacts, organize test structure)
+
+**What constitutes "big functionality/UI changes":**
+- New components or major component rewrites
+- New features (like calendar views, progress tracking systems)
+- State management changes affecting multiple components
+- Data structure modifications
+- Complex user interactions or animations
+- Integration of new libraries or frameworks
+
+**What does NOT require unit tests:**
+- Small bug fixes (typos, styling tweaks)
+- Minor UI adjustments (color changes, spacing)
+- Simple refactoring without functional changes
+- Documentation updates
+
+**Testing Framework:**
+- Use existing testing setup in the project (check for Jest, Vitest, React Testing Library)
+- If no testing framework exists, set up Vitest with React Testing Library
+- Focus on testing behavior, not implementation details
+- Mock external dependencies appropriately
+
+**Test Organization:**
+- Place test files in `__tests__` directories or use `.test.tsx` suffix
+- Group related tests logically
+- Use descriptive test names that explain the expected behavior
+- Include both positive and negative test cases
 
 ## File Structure Priority
 
