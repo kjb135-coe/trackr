@@ -4,7 +4,11 @@ import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 
-export const ThemeToggle: React.FC = () => {
+interface ThemeToggleProps {
+  fullWidth?: boolean;
+}
+
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ fullWidth = false }) => {
   const { theme, setTheme } = useTheme();
   const themeClasses = useThemeClasses();
 
@@ -14,12 +18,12 @@ export const ThemeToggle: React.FC = () => {
   ];
 
   return (
-    <div className={`flex items-center gap-1 ${themeClasses.isDark ? 'bg-gray-800/60 border border-gray-700/50' : 'bg-gray-100/80 border border-gray-200/50'} rounded-xl p-1.5 backdrop-blur-sm shadow-sm`}>
+    <div className={`flex items-center gap-1 ${themeClasses.isDark ? 'bg-gray-800/60 border border-gray-700/50' : 'bg-gray-100/80 border border-gray-200/50'} rounded-xl p-1.5 backdrop-blur-sm shadow-sm ${fullWidth ? 'w-full' : ''}`}>
       {themes.map(({ key, label, icon: Icon }) => (
         <motion.button
           key={key}
           onClick={() => setTheme(key)}
-          className={`relative px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 flex items-center gap-2 ${
+          className={`relative px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 flex items-center gap-2 ${fullWidth ? 'flex-1 justify-center' : ''} ${
             theme === key
               ? themeClasses.isDark 
                 ? 'bg-gray-700 text-gray-100 shadow-md' 
@@ -32,7 +36,7 @@ export const ThemeToggle: React.FC = () => {
           whileHover={{ scale: 1.02 }}
         >
           <Icon className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">{label}</span>
+          <span className={fullWidth ? '' : 'hidden sm:inline'}>{label}</span>
           
           {theme === key && (
             <motion.div
