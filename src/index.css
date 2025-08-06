@@ -1,23 +1,191 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply h-full;
+  }
+  
+  body {
+    @apply font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Light theme */
+  body {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: #1e293b;
+  }
+
+  /* Dark theme */
+  .dark body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f1f5f9;
+  }
+
+  * {
+    @apply border-gray-200 dark:border-gray-700;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  /* Card components */
+  .card-light {
+    @apply bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-sm;
+  }
+  
+  .card-dark {
+    @apply bg-gray-800/90 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-lg;
+  }
+  
+  /* Button components */
+  .btn-primary-light {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98];
+  }
+  
+  .btn-primary-dark {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98];
+  }
+  
+  .btn-secondary-light {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 border border-gray-200;
+  }
+  
+  .btn-secondary-dark {
+    @apply bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 border border-gray-600;
+  }
+  
+  /* Input components */
+  .input-light {
+    @apply bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all;
+  }
+  
+  .input-dark {
+    @apply bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all;
+  }
+  
+  /* Theme-specific colors */
+  .text-primary-light {
+    @apply text-gray-900;
+  }
+  
+  .text-primary-dark {
+    @apply text-gray-100;
+  }
+  
+  .text-secondary-light {
+    @apply text-gray-600;
+  }
+  
+  .text-secondary-dark {
+    @apply text-gray-300;
+  }
+  
+  .text-muted-light {
+    @apply text-gray-500;
+  }
+  
+  .text-muted-dark {
+    @apply text-gray-400;
+  }
+  
+  /* Hover states */
+  .hover-bg-light {
+    @apply hover:bg-gray-50;
+  }
+  
+  .hover-bg-dark {
+    @apply hover:bg-gray-700;
+  }
+  
+  /* Calendar specific */
+  .calendar-header-light {
+    @apply bg-gray-50/80 border-gray-200;
+  }
+  
+  .calendar-header-dark {
+    @apply bg-gray-800/50 border-gray-700;
+  }
+  
+  .calendar-cell-light {
+    @apply border-gray-200 hover:bg-gray-50;
+  }
+  
+  .calendar-cell-dark {
+    @apply border-gray-700 hover:bg-gray-800/50;
+  }
+  
+  .calendar-today-light {
+    @apply bg-blue-50 border-blue-200;
+  }
+  
+  .calendar-today-dark {
+    @apply bg-blue-900/30 border-blue-700/50;
+  }
+  
+  /* Checkbox/completion states */
+  .completion-unchecked-light {
+    @apply border-2 border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50;
+  }
+  
+  .completion-unchecked-dark {
+    @apply border-2 border-gray-600 bg-gray-800 hover:border-blue-400 hover:bg-blue-900/30;
+  }
+  
+  .completion-checked-light {
+    @apply border-2 border-blue-600 bg-blue-600;
+  }
+  
+  .completion-checked-dark {
+    @apply border-2 border-blue-500 bg-blue-500;
+  }
 }
 
-* {
-  box-sizing: border-box;
-}
-
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  /* Glassmorphism effects */
+  .glass-light {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .glass-dark {
+    background: rgba(31, 41, 55, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+  }
 }

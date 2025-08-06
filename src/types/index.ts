@@ -1,39 +1,78 @@
-export interface Habit {
+export interface HabitV2 {
   id: string;
   name: string;
-  tag: string;
+  emoji: string;
+  category: string;
   streak: number;
-  completions: {
-    [date: string]: {
-      completed: boolean;
-      value?: number;
-    };
+  bestStreak: number;
+  completions: Record<string, CompletionData>;
+  createdAt: Date;
+  settings: {
+    target?: number;
+    unit?: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    reminders?: boolean;
   };
-  goal?: {
-    type: 'quantity';
-    target: number;
-    unit: string;
+  analytics: {
+    totalCompletions: number;
+    averagePerWeek: number;
+    bestWeek: Date | null;
   };
-  createdAt: number;
 }
 
-export interface UserPreferences {
-  theme: 'light' | 'dark';
-  showTutorial: boolean;
+export interface CompletionData {
+  completed: boolean;
+  value?: number;
+  completedAt?: Date;
+}
+
+export interface UserPreferencesV2 {
+  theme?: 'light' | 'dark';
+  showOnboarding: boolean;
   name?: string;
-  weeklyTrackGoal?: number;
+  weeklyGoal?: number;
+  celebrationLevel: 'minimal' | 'normal' | 'extra';
+  insights: boolean;
 }
 
-export type Tag = {
+export interface Achievement {
   id: string;
   name: string;
-  isCustom: boolean;
+  description: string;
+  icon: string;
+  unlockedAt?: Date;
+  progress: number;
+  maxProgress: number;
 }
 
-export const DEFAULT_TAGS: Tag[] = [
-  { id: 'health', name: 'Health', isCustom: false },
-  { id: 'productivity', name: 'Productivity', isCustom: false },
-  { id: 'learning', name: 'Learning', isCustom: false },
-  { id: 'fitness', name: 'Fitness', isCustom: false },
-  { id: 'mindfulness', name: 'Mindfulness', isCustom: false },
-]; 
+export interface HabitTemplate {
+  id: string;
+  name: string;
+  emoji: string;
+  category: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  description: string;
+  isPopular: boolean;
+}
+
+export interface WeeklyStats {
+  currentWeek: {
+    completed: number;
+    total: number;
+    percentage: number;
+  };
+  bestWeek: {
+    completed: number;
+    weekStart: Date;
+  };
+  streak: number;
+}
+
+export type OnboardingStep = 'welcome' | 'habits' | 'personalization' | 'complete';
+
+export interface OnboardingState {
+  currentStep: OnboardingStep;
+  userName: string;
+  selectedHabits: string[];
+  isComplete: boolean;
+}
