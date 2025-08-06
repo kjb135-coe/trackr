@@ -29,13 +29,18 @@ Trackr is a modern, elegant habit tracking React application built for personal 
 ### Key Features Implemented
 
 - **Weekly Habit Tracking**: Grid-based interface showing 7 days with completion status
-- **Monthly Calendar View**: Full-screen historical view with color-coded completion rates
-- **Enhanced Progress Bar**: Gradient-filled progress tracking with animations and pulsing effects
+- **Inline Week Navigation**: Clean navigation controls (← Aug 4–10 → • Today) in dedicated row above weekday headers
+- **Conditional Progress Bar**: Animated progress indicator that only appears when weekly goal is set
+- **Weekly Goal Modal**: Professional popup interface for setting weekly completion targets (50-100%)
+- **Monthly Calendar View**: Dense, full-screen historical view with color-coded completion rates
+- **Enhanced Grid Interactions**: Full-cell hit targets (≥48px) with keyboard navigation (arrow keys, space/enter)
+- **Today Column Highlighting**: Subtle visual distinction for current day's habits
+- **Collapsible Control Panel**: Organized settings panel (collapsed by default) with proper button hierarchy
 - **Smart Tooltips**: Context-aware positioning that prevents screen cutoffs
-- **Theme Support**: Dark mode as default with light mode toggle
+- **Theme Support**: Dark mode as default with improved contrast ratios and design token system
 - **Installation Date Logic**: Only applies color coding from app installation date forward
 - **Responsive Design**: Works across different screen sizes
-- **Skeleton Features**: WeeklyProgress, BudgetTracker, HabitInsights, TimeTracker, DataExport, SocialHub
+- **Skeleton Features**: WeeklyProgress, HabitInsights, SocialHub (DataExport, TimeTracker, BudgetTracker removed)
 
 ### Data Structure
 
@@ -103,6 +108,21 @@ if (date < appInstallDate) {
   return theme.isDark ? 'bg-gray-700/50' : 'bg-gray-200/50';
 }
 ```
+
+### 6. UI/UX Overhaul (August 2025)
+**Goal**: Make the weekly grid the hero, improve interaction patterns, and enhance accessibility
+**Key Changes**:
+- Moved week navigation to dedicated spanning row above weekday headers
+- Made progress bar conditional - only shows when weekly goal is set with smooth animation
+- Replaced dropdown goal setting with professional modal popup
+- Enhanced grid cells with proper hit targets (≥48px) and keyboard navigation
+- Improved button hierarchy: primary (Add Habit), secondary (Monthly View), tertiary (navigation)
+- Implemented AA-compliant focus rings and contrast ratios
+- Made control panel collapsed by default with gear icon toggle
+- Added design token system for consistent spacing, colors, and typography
+
+**Files Modified**: HabitCalendarGrid.tsx, ControlPanel.tsx, MonthlyCalendarPage.tsx, WeeklyGoalModal.tsx (new), useThemeClasses.ts, tokens.ts (new)
+**Testing**: Comprehensive unit tests added for new functionality (HabitCalendarGrid.test.tsx, WeeklyGoalModal.test.tsx, ControlPanel.test.tsx)
 
 ## Design Patterns & Conventions
 

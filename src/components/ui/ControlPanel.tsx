@@ -18,13 +18,12 @@ interface ControlPanelProps {
 export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, onViewMonthly }) => {
   const [isOpen, setIsOpen] = useState(false); // Collapsed by default
   const [activeFeature, setActiveFeature] = useState<string | null>(null);
-  const [showGoalSetting, setShowGoalSetting] = useState(false);
+  const [showGoalModal, setShowGoalModal] = useState(false);
   const theme = useThemeClasses();
   const { preferences, updatePreferences } = useHabitStore();
 
   const handleGoalUpdate = async (newGoal: number) => {
     await updatePreferences({ weeklyGoal: newGoal });
-    setShowGoalSetting(false);
   };
 
   return (
@@ -101,56 +100,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, 
                   Goals
                 </label>
                 <button
-                  onClick={() => setShowGoalSetting(!showGoalSetting)}
+                  onClick={() => setShowGoalModal(true)}
                   className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} 
                     w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors`}
                 >
                   <TrendingUp className="w-4 h-4" />
-                  Set Weekly Goal
+                  {preferences.weeklyGoal ? `Weekly Goal (${preferences.weeklyGoal}%)` : 'Set Weekly Goal'}
                 </button>
-
-                {/* Weekly Goal Setting - Inline when clicked */}
-                {showGoalSetting && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden mt-2"
-                  >
-                    <div className={`${theme.isDark ? 'bg-gray-700/30' : 'bg-gray-50'} rounded-lg p-3`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`text-xs ${theme.textSecondary}`}>
-                          {preferences.weeklyGoal || 85}%
-                        </span>
-                        <span className={`text-xs ${theme.textSecondary}`}>
-                          50–100%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="50"
-                        max="100"
-                        step="5"
-                        value={preferences.weeklyGoal || 85}
-                        onChange={(e) => handleGoalUpdate(parseInt(e.target.value))}
-                        className={`w-full h-2 rounded-lg appearance-none cursor-pointer
-                          ${theme.isDark ? 'bg-gray-600' : 'bg-gray-300'}
-                          [&::-webkit-slider-thumb]:appearance-none
-                          [&::-webkit-slider-thumb]:w-4
-                          [&::-webkit-slider-thumb]:h-4
-                          [&::-webkit-slider-thumb]:rounded-full
-                          [&::-webkit-slider-thumb]:bg-blue-500
-                          [&::-webkit-slider-thumb]:cursor-pointer
-                          [&::-moz-range-thumb]:w-4
-                          [&::-moz-range-thumb]:h-4
-                          [&::-moz-range-thumb]:rounded-full
-                          [&::-moz-range-thumb]:bg-blue-500
-                          [&::-moz-range-thumb]:cursor-pointer
-                          [&::-moz-range-thumb]:border-none`}
-                      />
-                    </div>
-                  </motion.div>
-                )}
               </div>
 
               {/* Future Features - De-emphasized */}

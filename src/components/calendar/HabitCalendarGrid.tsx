@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
-import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { HabitV2, UserPreferencesV2 } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 
@@ -27,9 +27,10 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   const [habitMenuOpen, setHabitMenuOpen] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [focusedCell, setFocusedCell] = useState<{ habitIndex: number; dayIndex: number } | null>(null);
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   const today = currentDate;
-  const startDate = startOfWeek(today, { weekStartsOn: 1 });
+  const startDate = currentWeekStart;
   const days = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 
   // Update current date every minute to catch day/week changes
@@ -58,6 +59,17 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   const isFuture = useCallback((date: Date) => {
     return date > today;
   }, [today]);
+
+  const handleWeekNavigation = useCallback((direction: 'prev' | 'next') => {
+    setCurrentWeekStart(prev => {
+      return direction === 'next' ? addWeeks(prev, 1) : subWeeks(prev, 1);
+    });
+  }, []);
+
+  const handleTodayClick = useCallback(() => {
+    const todayWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    setCurrentWeekStart(todayWeekStart);
+  }, []);
 
   // Keyboard navigation
   useEffect(() => {
@@ -183,13 +195,26 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
           <h1 className={`text-2xl font-semibold ${theme.textPrimary}`}>
             Keegan's Trackr
           </h1>
-          
-          {/* Compact Progress Indicator */}
-          <div className="flex items-center gap-3">
-            <div className={`text-sm ${theme.textSecondary}`}>
-              {weeklyProgress.completed}/{weeklyProgress.total}
+        </div>
+        
+        {/* Conditional Progress Bar - only show when goal is set */}
+        {preferences.weeklyGoal && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="mb-4"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className={`text-sm ${theme.textSecondary}`}>
+                {weeklyProgress.completed}/{weeklyProgress.total} completed
+              </div>
+              <div className={`text-sm font-medium ${theme.textPrimary}`}>
+                {weeklyProgress.percentage}% of {preferences.weeklyGoal}% goal
+              </div>
             </div>
-            <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-blue-500 rounded-full"
                 initial={{ width: 0 }}
@@ -197,11 +222,8 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                 transition={{ duration: 0.8, ease: "easeOut" }}
               />
             </div>
-            <div className={`text-sm font-medium ${theme.textPrimary}`}>
-              {weeklyProgress.percentage}%
-            </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Enhanced Calendar Grid */}
@@ -211,24 +233,37 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
         transition={{ delay: 0.5, duration: 0.6 }}
         className={`${theme.card} overflow-hidden shadow-xl`}
       >
-        {/* Header Row with Week Navigation */}
+        {/* Week Navigation Row - spans full width */}
+        <div className={`border-b ${theme.calendarHeader}`}>
+          <div className="flex items-center justify-center py-3">
+            <button 
+              onClick={() => handleWeekNavigation('prev')}
+              className={`p-2 ${theme.btnTertiary} rounded-lg mr-4`}
+            >
+              ←
+            </button>
+            <span className={`text-lg font-medium ${theme.textPrimary} min-w-[140px] text-center`}>
+              {format(startDate, 'MMM d')}–{format(addDays(startDate, 6), 'd')}
+            </span>
+            <button 
+              onClick={() => handleWeekNavigation('next')}
+              className={`p-2 ${theme.btnTertiary} rounded-lg ml-4`}
+            >
+              →
+            </button>
+            <button 
+              onClick={handleTodayClick}
+              className={`ml-4 ${theme.btnPrimary} text-sm`}
+            >
+              Today
+            </button>
+          </div>
+        </div>
+        
+        {/* Header Row - Habits and Days */}
         <div className={`grid grid-cols-8 border-b ${theme.calendarHeader}`}>
-          <div className={`p-4 font-medium ${theme.textPrimary} flex items-center justify-between`}>
-            <span>Habits</span>
-            <div className="flex items-center gap-2 text-sm">
-              <button className={`p-1 ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}>
-                ←
-              </button>
-              <span className={theme.textSecondary}>
-                {format(startDate, 'MMM d')}–{format(addDays(startDate, 6), 'd')}
-              </span>
-              <button className={`p-1 ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}>
-                →
-              </button>
-              <button className={`ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors`}>
-                Today
-              </button>
-            </div>
+          <div className={`p-4 font-medium ${theme.textPrimary}`}>
+            Habits
           </div>
           {days.map((date) => (
             <div
