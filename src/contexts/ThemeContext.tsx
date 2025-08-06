@@ -21,13 +21,13 @@ export const useTheme = () => {
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { preferences, updatePreferences } = useHabitStore();
-  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light');
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     const getEffectiveTheme = (): 'light' | 'dark' => {
-      // If no theme is set in preferences, use system preference (auto behavior)
+      // If no theme is set in preferences, default to dark theme
       if (!preferences.theme) {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        return 'dark';
       }
       return preferences.theme === 'dark' ? 'dark' : 'light';
     };
@@ -63,7 +63,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <ThemeContext.Provider value={{ theme: preferences.theme || 'light', effectiveTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: preferences.theme || 'dark', effectiveTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

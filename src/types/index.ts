@@ -33,6 +33,7 @@ export interface UserPreferencesV2 {
   weeklyGoal?: number;
   celebrationLevel: 'minimal' | 'normal' | 'extra';
   insights: boolean;
+  installDate?: Date;
 }
 
 export interface Achievement {
