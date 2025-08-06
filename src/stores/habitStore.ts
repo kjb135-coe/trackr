@@ -34,6 +34,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     showOnboarding: true,
     celebrationLevel: 'normal',
     insights: true,
+    installDate: new Date(),
   } as UserPreferencesV2,
   onboarding: {
     currentStep: 'welcome',

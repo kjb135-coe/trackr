@@ -7,6 +7,7 @@ import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useThemeClasses } from './hooks/useThemeClasses';
 import { ControlPanel } from './components/ui';
+import { MonthlyCalendarPage } from './components/pages/MonthlyCalendarPage';
 
 function AppContent() {
   const { 
@@ -25,6 +26,7 @@ function AppContent() {
   
   const theme = useThemeClasses();
   const [showHabitModal, setShowHabitModal] = useState(false);
+  const [currentView, setCurrentView] = useState<'weekly' | 'monthly'>('weekly');
 
   useEffect(() => {
     loadData();
@@ -46,6 +48,14 @@ function AppContent() {
 
   const handleAddHabit = () => {
     setShowHabitModal(true);
+  };
+
+  const handleViewMonthly = () => {
+    setCurrentView('monthly');
+  };
+
+  const handleBackToWeekly = () => {
+    setCurrentView('weekly');
   };
 
   const handleSaveHabit = async (habit: any) => {
@@ -76,10 +86,26 @@ function AppContent() {
     );
   }
 
+  if (currentView === 'monthly') {
+    return (
+      <div className="min-h-screen transition-all duration-300">
+        <MonthlyCalendarPage 
+          habits={habits} 
+          onBack={handleBackToWeekly}
+          installDate={preferences.installDate}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen transition-all duration-300">
       {/* Control Panel */}
-      <ControlPanel onAddHabit={handleAddHabit} />
+      <ControlPanel 
+        onAddHabit={handleAddHabit} 
+        habits={habits} 
+        onViewMonthly={handleViewMonthly}
+      />
 
       {/* Main Content */}
       <motion.div
@@ -134,14 +160,14 @@ function AppContent() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="fixed bottom-4 right-4 flex items-center gap-3 text-xs z-40"
+        className="fixed bottom-4 right-4 flex items-center gap-4 text-lg z-40"
       >
-        <div className={`${theme.isDark ? 'text-gray-500' : 'text-gray-400'} flex items-center gap-3`}>
+        <div className={`${theme.isDark ? 'text-gray-500' : 'text-gray-400'} flex items-center gap-4`}>
           <a
             href="https://x.com/kc_e_e"
             target="_blank"
             rel="noopener noreferrer"
-            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors`}
+            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors text-xl`}
             aria-label="Follow on X"
           >
             𝕏
@@ -150,14 +176,14 @@ function AppContent() {
             href="https://www.linkedin.com/in/keegan-borig-0a100514a/"
             target="_blank"
             rel="noopener noreferrer"
-            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors`}
+            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors text-xl`}
             aria-label="Connect on LinkedIn"
           >
             in
           </a>
           <a
             href="mailto:keeganborig@gmail.com"
-            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors`}
+            className={`${theme.isDark ? 'hover:text-blue-400' : 'hover:text-blue-600'} transition-colors text-xl`}
             aria-label="Send email"
           >
             ✉

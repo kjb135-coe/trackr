@@ -1,16 +1,31 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Plus } from 'lucide-react';
+import { Settings, Plus, Target, Brain, Calendar, Users, TrendingUp } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { WeeklyProgress } from '../features/WeeklyProgress';
+import { HabitInsights } from '../features/HabitInsights';
+import { SocialHub } from '../features/SocialHub';
+import { HabitV2 } from '../../types';
+import { useHabitStore } from '../../stores/habitStore';
 
 interface ControlPanelProps {
   onAddHabit: () => void;
+  habits: HabitV2[];
+  onViewMonthly: () => void;
 }
 
-export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit }) => {
+export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, onViewMonthly }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeFeature, setActiveFeature] = useState<string | null>(null);
+  const [showGoalSetting, setShowGoalSetting] = useState(false);
   const theme = useThemeClasses();
+  const { preferences, updatePreferences } = useHabitStore();
+
+  const handleGoalUpdate = async (newGoal: number) => {
+    await updatePreferences({ weeklyGoal: newGoal });
+    setShowGoalSetting(false);
+  };
 
   return (
     <div className="fixed top-4 right-4 z-50">
@@ -38,7 +53,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.2 }}
-            className={`absolute right-0 top-14 min-w-[200px] ${theme.isDark ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-gray-200/50'} 
+            className={`absolute right-0 top-14 min-w-[250px] ${theme.isDark ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-gray-200/50'} 
               backdrop-blur-sm border rounded-2xl shadow-2xl p-4`}
           >
             <div className="space-y-4">
@@ -47,7 +62,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit }) => {
                 <label className={`text-sm font-medium ${theme.textSecondary} block mb-2`}>
                   Theme
                 </label>
-                <ThemeToggle />
+                <ThemeToggle fullWidth />
               </div>
 
               {/* Divider */}
@@ -69,6 +84,118 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit }) => {
                     <Plus className="w-4 h-4" />
                     Add Habit
                   </button>
+                  <button
+                    onClick={() => {
+                      onViewMonthly();
+                      setIsOpen(false);
+                    }}
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'} 
+                      w-full flex items-center gap-3 px-4 py-3 text-sm rounded-xl transition-colors`}
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Monthly View
+                  </button>
+                  <button
+                    onClick={() => setShowGoalSetting(!showGoalSetting)}
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'} 
+                      w-full flex items-center gap-3 px-4 py-3 text-sm rounded-xl transition-colors`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    Set Weekly Goal ({preferences.weeklyGoal || 85}%)
+                  </button>
+                </div>
+
+                {/* Weekly Goal Setting */}
+                {showGoalSetting && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mt-3"
+                  >
+                    <div className={`${theme.isDark ? 'bg-gray-700/30' : 'bg-blue-50/50'} rounded-xl p-3`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-xs font-medium ${theme.textSecondary}`}>
+                          Weekly Goal: {preferences.weeklyGoal || 85}%
+                        </span>
+                        <span className={`text-xs ${theme.textSecondary}`}>
+                          50% - 100%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="50"
+                        max="100"
+                        step="5"
+                        value={preferences.weeklyGoal || 85}
+                        onChange={(e) => handleGoalUpdate(parseInt(e.target.value))}
+                        className={`w-full h-2 rounded-lg appearance-none cursor-pointer
+                          ${theme.isDark ? 'bg-gray-600' : 'bg-gray-300'}
+                          [&::-webkit-slider-thumb]:appearance-none
+                          [&::-webkit-slider-thumb]:w-4
+                          [&::-webkit-slider-thumb]:h-4
+                          [&::-webkit-slider-thumb]:rounded-full
+                          [&::-webkit-slider-thumb]:bg-blue-500
+                          [&::-webkit-slider-thumb]:cursor-pointer
+                          [&::-moz-range-thumb]:w-4
+                          [&::-moz-range-thumb]:h-4
+                          [&::-moz-range-thumb]:rounded-full
+                          [&::-moz-range-thumb]:bg-blue-500
+                          [&::-moz-range-thumb]:cursor-pointer
+                          [&::-moz-range-thumb]:border-none`}
+                      />
+                      <div className={`text-xs ${theme.textSecondary} mt-1 text-center`}>
+                        Complete {preferences.weeklyGoal || 85}% of your habits each week
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className={`border-t ${theme.isDark ? 'border-gray-700' : 'border-gray-200'}`} />
+
+              {/* Features Preview */}
+              <div>
+                <label className={`text-sm font-medium ${theme.textSecondary} block mb-3`}>
+                  Features
+                </label>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setActiveFeature('weekly');
+                      setIsOpen(false);
+                    }}
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'} 
+                      w-full flex items-center gap-3 px-4 py-2 text-sm rounded-xl transition-colors`}
+                  >
+                    <Target className="w-4 h-4 text-green-500" />
+                    <span className="flex-1 text-left">Weekly Progress</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveFeature('insights');
+                      setIsOpen(false);
+                    }}
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'} 
+                      w-full flex items-center gap-3 px-4 py-2 text-sm rounded-xl transition-colors`}
+                  >
+                    <Brain className="w-4 h-4 text-purple-500" />
+                    <span className="flex-1 text-left">AI Insights</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveFeature('social');
+                      setIsOpen(false);
+                    }}
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'} 
+                      w-full flex items-center gap-3 px-4 py-2 text-sm rounded-xl transition-colors`}
+                  >
+                    <Users className="w-4 h-4 text-cyan-500" />
+                    <span className="flex-1 text-left">Social Hub</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -88,6 +215,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit }) => {
           />
         )}
       </AnimatePresence>
+
+      {/* Feature Modals */}
+      <WeeklyProgress 
+        isOpen={activeFeature === 'weekly'} 
+        onClose={() => setActiveFeature(null)} 
+      />
+      <HabitInsights 
+        isOpen={activeFeature === 'insights'} 
+        onClose={() => setActiveFeature(null)} 
+      />
+      <SocialHub 
+        isOpen={activeFeature === 'social'} 
+        onClose={() => setActiveFeature(null)} 
+      />
     </div>
   );
 };
