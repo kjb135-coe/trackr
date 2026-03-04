@@ -5,8 +5,8 @@ import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from 'dat
 import { HabitV2, UserPreferencesV2 } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 
-// Debug grid alignment (dev-only)
-const DEBUG_GRID = new URLSearchParams(window.location.search).has('debugGrid');
+// Debug grid alignment (dev-only, enabled via REACT_APP_DEBUG_GRID=true)
+const DEBUG_GRID = process.env.NODE_ENV === 'development' && process.env.REACT_APP_DEBUG_GRID === 'true';
 
 interface HabitCalendarGridProps {
   habits: HabitV2[];
