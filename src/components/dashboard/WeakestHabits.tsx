@@ -8,7 +8,7 @@ interface WeakestHabitsProps {
   habits: HabitStats[];
 }
 
-export const WeakestHabits: React.FC<WeakestHabitsProps> = ({ habits }) => {
+export const WeakestHabits: React.FC<WeakestHabitsProps> = React.memo(({ habits }) => {
   const theme = useThemeClasses();
 
   if (habits.length === 0) return null;
@@ -46,4 +46,6 @@ export const WeakestHabits: React.FC<WeakestHabitsProps> = ({ habits }) => {
       </p>
     </motion.div>
   );
-};
+});
+
+WeakestHabits.displayName = 'WeakestHabits';
