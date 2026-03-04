@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Target } from 'lucide-react';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface WeeklyGoalModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
   onSave
 }) => {
   const theme = useThemeClasses();
+  const focusTrapRef = useFocusTrap(isOpen);
   const [goal, setGoal] = useState(currentGoal);
 
   const handleSave = () => {
@@ -46,7 +48,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div ref={focusTrapRef}>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -186,7 +188,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
               </div>
             )}
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

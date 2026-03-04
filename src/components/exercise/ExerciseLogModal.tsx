@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ExerciseEntry, EXERCISE_TYPES } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ExerciseLogModalProps {
@@ -42,6 +43,7 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
   defaultDate,
 }) => {
   const theme = useThemeClasses();
+  const focusTrapRef = useFocusTrap(isOpen);
   const today = defaultDate || format(new Date(), 'yyyy-MM-dd');
 
   const [date, setDate] = useState(today);
@@ -106,7 +108,7 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div ref={focusTrapRef} className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

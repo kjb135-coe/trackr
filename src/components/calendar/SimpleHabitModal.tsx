@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { HABIT_TEMPLATES, habitService } from '../../services/habitService';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { HabitV2 } from '../../types';
 
 interface SimpleHabitModalProps {
@@ -17,6 +18,7 @@ export const SimpleHabitModal: React.FC<SimpleHabitModalProps> = ({
   onSave 
 }) => {
   const theme = useThemeClasses();
+  const focusTrapRef = useFocusTrap(isOpen);
   const [habitName, setHabitName] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
@@ -52,7 +54,7 @@ export const SimpleHabitModal: React.FC<SimpleHabitModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div ref={focusTrapRef} className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

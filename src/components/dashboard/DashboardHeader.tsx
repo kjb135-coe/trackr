@@ -15,7 +15,7 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: 90, label: '90d' },
 ];
 
-export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+export const DashboardHeader: React.FC<DashboardHeaderProps> = React.memo(({
   name,
   period,
   onPeriodChange,
@@ -60,4 +60,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </div>
     </div>
   );
-};
+});
+
+DashboardHeader.displayName = 'DashboardHeader';
