@@ -14,7 +14,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
   const [step, setStep] = useState(0);
   const [userName, setUserName] = useState('');
   const [selectedHabits, setSelectedHabits] = useState<string[]>([]);
-  const { addHabit } = useHabitStore();
+  const { addHabit, setError } = useHabitStore();
   const { updatePreferences } = usePreferencesStore();
 
   // Extract name from origin/hostname
@@ -51,36 +51,36 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
             </div>
           </motion.div>
           <div className="space-y-4">
-            <p className="text-xl text-slate-700 font-medium">
+            <p className="text-xl text-slate-700 dark:text-slate-200 font-medium">
               Build life-changing habits with a beautiful, minimalist calendar view
             </p>
             <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
-              <motion.div 
-                className="p-3 bg-slate-50 rounded-lg"
+              <motion.div
+                className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
                 <Target className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-                <p className="text-sm text-slate-600">Daily Focus</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Daily Focus</p>
               </motion.div>
-              <motion.div 
-                className="p-3 bg-slate-50 rounded-lg"
+              <motion.div
+                className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
               >
                 <TrendingUp className="w-6 h-6 text-purple-500 mx-auto mb-2" />
-                <p className="text-sm text-slate-600">Track Progress</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Track Progress</p>
               </motion.div>
-              <motion.div 
-                className="p-3 bg-slate-50 rounded-lg"
+              <motion.div
+                className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
               >
                 <Sparkles className="w-6 h-6 text-green-500 mx-auto mb-2" />
-                <p className="text-sm text-slate-600">Stay Motivated</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Stay Motivated</p>
               </motion.div>
             </div>
           </div>
@@ -109,12 +109,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100"
+              className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg border border-blue-100 dark:border-blue-800"
             >
-              <p className="text-lg text-slate-700">
+              <p className="text-lg text-slate-700 dark:text-slate-200">
                 Perfect! Your dashboard will be called <strong>"{ userName}'s Trackr"</strong>
               </p>
-              <p className="text-sm text-slate-500 mt-2">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
                 You'll get personalized greetings and motivational messages
               </p>
             </motion.div>
@@ -145,13 +145,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
                 }}
                 className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
                   selectedHabits.includes(template.id)
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 shadow-lg transform'
-                    : 'border-slate-200 hover:border-blue-300 hover:shadow-md bg-white'
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 shadow-lg transform'
+                    : 'border-slate-200 dark:border-slate-600 hover:border-blue-300 hover:shadow-md bg-white dark:bg-slate-700/50'
                 }`}
               >
                 <div className="text-center">
                   <div className="text-3xl mb-2">{template.emoji}</div>
-                  <div className="font-semibold text-sm text-slate-700">{template.name}</div>
+                  <div className="font-semibold text-sm text-slate-700 dark:text-slate-200">{template.name}</div>
                   {selectedHabits.includes(template.id) && (
                     <motion.div
                       initial={{ scale: 0 }}
@@ -172,7 +172,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
             animate={{ scale: selectedHabits.length >= 3 ? 1.05 : 1 }}
           >
             <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full ${
-              selectedHabits.length >= 3 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+              selectedHabits.length >= 3 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
             }`}>
               <span className="font-medium">Selected: {selectedHabits.length}/5 habits</span>
               {selectedHabits.length >= 3 && <Sparkles className="w-4 h-4" />}
@@ -199,34 +199,34 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
           </motion.div>
           
           <div className="space-y-4">
-            <p className="text-xl text-slate-700 font-medium">
+            <p className="text-xl text-slate-700 dark:text-slate-200 font-medium">
               {userName ? `Welcome aboard, ${userName}!` : 'Welcome aboard!'} Your minimalist habit calendar is ready.
             </p>
-            <p className="text-slate-600">
+            <p className="text-slate-600 dark:text-slate-400">
               Every new tab will show your clean, calendar-style progress view.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
             <motion.div 
-              className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200"
+              className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl border border-blue-200 dark:border-blue-700"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
               <div className="text-2xl mb-2">📅</div>
-              <p className="text-sm font-medium text-blue-700">Calendar View</p>
-              <p className="text-xs text-blue-600">Clean grid layout</p>
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Calendar View</p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">Clean grid layout</p>
             </motion.div>
             <motion.div 
-              className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200"
+              className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl border border-purple-200 dark:border-purple-700"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
               <div className="text-2xl mb-2">⚡</div>
-              <p className="text-sm font-medium text-purple-700">Quick Toggle</p>
-              <p className="text-xs text-purple-600">Click to complete</p>
+              <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Quick Toggle</p>
+              <p className="text-xs text-purple-600 dark:text-purple-400">Click to complete</p>
             </motion.div>
           </div>
         </div>
@@ -251,17 +251,21 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
   };
 
   const handleComplete = async () => {
-    // Save preferences
-    await updatePreferences({
-      name: userName,
-      showOnboarding: false,
-    });
+    try {
+      // Save preferences
+      await updatePreferences({
+        name: userName,
+        showOnboarding: false,
+      });
 
-    // Create selected habits
-    const templates = HABIT_TEMPLATES.filter(t => selectedHabits.includes(t.id));
-    for (const template of templates) {
-      const habit = habitService.createHabit(template);
-      await addHabit(habit);
+      // Create selected habits
+      const templates = HABIT_TEMPLATES.filter(t => selectedHabits.includes(t.id));
+      for (const template of templates) {
+        const habit = habitService.createHabit(template);
+        await addHabit(habit);
+      }
+    } catch (error) {
+      setError('Failed to complete setup. Please try again.');
     }
   };
 
