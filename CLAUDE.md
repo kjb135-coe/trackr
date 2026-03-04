@@ -1,48 +1,225 @@
-# Trackr - Habit Tracking Application
+# Trackr
 
-## High-Level Overview
+Personal habit tracking app for Keegan. React SPA that runs as a Chrome Extension (new tab override) or standalone web app. Weekly grid view for daily tracking, monthly calendar for historical analysis. Includes sleep, exercise, journal, and nutrition tracking features.
 
-Trackr is a modern, elegant habit tracking React application built for personal use by Keegan. The app helps users track daily habits with a beautiful, intuitive interface that emphasizes visual feedback and user experience. The application features both weekly grid view for daily tracking and a comprehensive monthly calendar view for historical analysis.
+## Commands
 
-## Technologies Used
+Only these scripts exist in `package.json`:
 
-- **Frontend Framework**: React 18 with TypeScript
-- **Styling**: Tailwind CSS with custom theme support
-- **Animations**: Framer Motion for smooth transitions and interactions
-- **State Management**: Zustand for global state
-- **Date Handling**: date-fns for date manipulation and formatting
-- **Icons**: Lucide React for consistent iconography
-- **Data Persistence**: Local Storage with structured service layer
-- **Build Tool**: Vite
-- **Package Manager**: npm
+```bash
+npm start            # Dev server (BROWSER=none, react-scripts start)
+npm run build        # Production build + copies manifest.json to build/
+npm run build:extension  # Just the manifest copy step
+npm test             # Jest via react-scripts test (watch mode)
+npm run eject        # CRA eject (unused)
+```
 
-## Current State & Architecture
+**`npm run lint` and `npm run typecheck` do NOT exist.**
 
-### Core Components
+## Tech Stack
 
-1. **App.tsx** - Main application wrapper with view routing between weekly and monthly views
-2. **HabitCalendarGrid.tsx** - Primary weekly habit tracking interface with enhanced progress bar
-3. **MonthlyCalendarPage.tsx** - Full-screen monthly calendar view with tooltips and color coding
-4. **ControlPanel.tsx** - Settings and navigation controls
-5. **Theme System** - Dark/light theme support with useThemeClasses hook
+| Dependency | Version | Notes |
+|---|---|---|
+| react / react-dom | ^18.2.0 | |
+| typescript | ^5.3.3 | strict mode, target es5 |
+| react-scripts | 5.0.1 | **CRA, NOT Vite** |
+| react-router-dom | ^7.13.0 | HashRouter for client-side routing |
+| tailwindcss | ^3.4.1 | class-based dark mode, `@tailwindcss/forms` plugin |
+| framer-motion | ^11.0.3 | All animations |
+| zustand | ^4.4.7 | Multiple stores (habits, preferences, features) |
+| dexie | ^4.3.0 | IndexedDB ORM for primary data storage |
+| date-fns | ^3.3.1 | v3 API |
+| lucide-react | ^0.312.0 | Icons |
+| clsx + tailwind-merge | ^2.1.0 / ^2.2.1 | `cn()` utility |
+| uuid | ^9.0.1 | Habit ID generation (devDep) |
+| @types/chrome | ^0.0.258 | Chrome Extension API types |
+| @testing-library/react | ^16.3.0 | + jest-dom ^6.6.4, user-event ^14.6.1 |
+| fake-indexeddb | ^6.2.5 | IndexedDB mock for tests (devDep) |
 
-### Key Features Implemented
+## Architecture
 
-- **Weekly Habit Tracking**: Grid-based interface showing 7 days with completion status
-- **Inline Week Navigation**: Clean navigation controls (← Aug 4–10 → • Today) in dedicated row above weekday headers
-- **Conditional Progress Bar**: Animated progress indicator that only appears when weekly goal is set
-- **Weekly Goal Modal**: Professional popup interface for setting weekly completion targets (50-100%)
-- **Monthly Calendar View**: Dense, full-screen historical view with color-coded completion rates
-- **Enhanced Grid Interactions**: Full-cell hit targets (≥48px) with keyboard navigation (arrow keys, space/enter)
-- **Today Column Highlighting**: Subtle visual distinction for current day's habits
-- **Collapsible Control Panel**: Organized settings panel (collapsed by default) with proper button hierarchy
-- **Smart Tooltips**: Context-aware positioning that prevents screen cutoffs
-- **Theme Support**: Dark mode as default with improved contrast ratios and design token system
-- **Installation Date Logic**: Only applies color coding from app installation date forward
-- **Responsive Design**: Works across different screen sizes
-- **Skeleton Features**: WeeklyProgress, HabitInsights, SocialHub (DataExport, TimeTracker, BudgetTracker removed)
+### Entry Point & Routing
 
-### Data Structure
+```
+index.tsx → App.tsx → HashRouter → ThemeProvider → Routes
+  └─ AppShell (layout wrapper)
+       ├─ Navigation (fixed top nav bar)
+       │    ├─ Tab links: Habits, Dashboard
+       │    ├─ Add Habit button (shown on / route)
+       │    └─ Settings dropdown (ThemeToggle, Monthly View, Weekly Goal)
+       ├─ <Outlet /> (React Router page content)
+       │    ├─ / → HabitsPage → HabitCalendarGrid
+       │    ├─ /monthly → MonthlyCalendarPage
+       │    ├─ /sleep → SleepPage (hidden from nav, accessible via URL)
+       │    ├─ /exercise → ExercisePage (hidden from nav, accessible via URL)
+       │    ├─ /journal → JournalPage
+       │    ├─ /nutrition → NutritionPage (hidden from nav, accessible via URL)
+       │    └─ /dashboard → DashboardPage
+       ├─ SimpleHabitModal (add habit)
+       ├─ OnboardingFlow (first-run only)
+       ├─ Error toast (fixed bottom-right)
+       └─ Footer (X/LinkedIn/email links, fixed bottom-right)
+```
+
+### Data Flow
+
+```
+Components → Zustand stores → Repositories → IndexedDB (Dexie) / chrome.storage.sync
+```
+
+All mutations go through the repository layer. Stores call repositories, then update their own state.
+
+### Storage
+
+**Hybrid approach:**
+- **IndexedDB** (Dexie.js): Habits + completions, Sleep, Exercise, Journal, Nutrition — large data sets that benefit from indexed queries
+- **chrome.storage.sync / localStorage**: Preferences, Achievements — small data that benefits from cross-device sync
+
+Database name: `trackr` with 7 tables:
+
+| Table | Primary Key | Indexes |
+|---|---|---|
+| habits | id | category, createdAt, updatedAt |
+| habitCompletions | ++id (auto) | habitId, date, [habitId+date] |
+| sleepEntries | id | date |
+| exerciseEntries | id | date |
+| journalEntries | id | date |
+| nutritionMeals | id | date, mealType |
+| nutritionFoodItems | id | mealId |
+
+Habits are stored **normalized** in IndexedDB (HabitRecord + HabitCompletionRecord tables) and **denormalized** back to HabitV2 in memory by the habitRepository.
+
+**Migration** (`src/db/migration.ts`): On first load, migrates data from old `chrome.storage.sync` / `localStorage` keys (`trackr_v2_habits`, `trackr_v2_preferences`) into IndexedDB. Sets `migrationVersion: 1` in preferences to skip on future loads.
+
+### Chrome Extension
+
+`public/manifest.json`: Manifest V3, overrides new tab with `index.html`, requests `storage` permission. **No background scripts, service workers, or content scripts.** The extension is purely the React app loaded as a new tab page.
+
+## Project Structure
+
+### Source Code
+
+```
+src/
+├── index.tsx                                          Entry point
+├── App.tsx                                            HashRouter + Routes
+├── index.css                                          Tailwind layers + custom classes
+├── setupTests.ts                                      Jest setup + mocks
+├── types/index.ts                                     All TypeScript interfaces
+├── contexts/ThemeContext.tsx                           Theme provider (dark default)
+├── hooks/useThemeClasses.ts                           Themed Tailwind class strings
+├── styles/tokens.ts                                   Design tokens
+├── utils/
+│   ├── cn.ts                                          clsx + twMerge
+│   └── logger.ts                                      Logger utility
+├── db/
+│   ├── database.ts                                    Dexie schema + record types
+│   └── migration.ts                                   Old storage → IndexedDB migration
+├── repositories/
+│   ├── habitRepository.ts                             Habits + completions (IndexedDB)
+│   ├── preferencesRepository.ts                       Preferences (chrome.storage.sync)
+│   ├── achievementRepository.ts                       Achievements (chrome.storage.sync)
+│   ├── sleepRepository.ts                             Sleep entries (IndexedDB)
+│   ├── exerciseRepository.ts                          Exercise entries (IndexedDB)
+│   ├── journalRepository.ts                           Journal entries (IndexedDB)
+│   └── nutritionRepository.ts                         Meals + food items (IndexedDB)
+├── stores/
+│   ├── habitStore.ts                                  Habit state + actions
+│   ├── preferencesStore.ts                            Preferences + onboarding state
+│   ├── createFeatureStore.ts                          Store factory for feature stores
+│   ├── sleepStore.ts                                  Sleep tracking store
+│   ├── exerciseStore.ts                               Exercise tracking store
+│   ├── journalStore.ts                                Journal store
+│   └── nutritionStore.ts                              Nutrition tracking store
+├── services/
+│   ├── habitService.ts                                Habit templates, analytics, streak calc
+│   ├── achievementService.ts                          8 achievement definitions + checker
+│   └── storage.ts                                     DEPRECATED — replaced by repositories
+└── components/
+    ├── layout/
+    │   ├── AppShell.tsx                                Main layout: nav, outlet, modals, footer
+    │   ├── Navigation.tsx                             Top nav bar with route tabs + settings
+    │   └── ComingSoon.tsx                             Placeholder component
+    ├── pages/
+    │   ├── HabitsPage.tsx                             Habits view wrapper
+    │   └── MonthlyCalendarPage.tsx                    Full-screen monthly calendar
+    ├── calendar/
+    │   ├── HabitCalendarGrid.tsx                      PRIMARY VIEW — weekly table grid
+    │   └── SimpleHabitModal.tsx                       Add habit modal
+    ├── dashboard/
+    │   ├── DashboardPage.tsx                          Orchestrator with period state + tab refresh
+    │   ├── DashboardHeader.tsx                        Greeting + period segmented control (7d|30d|90d)
+    │   ├── AggregateStats.tsx                         4 stat cards: completion rate, streak, totals
+    │   ├── CompletionHeatmap.tsx                      GitHub-style SVG heatmap (13 weeks)
+    │   ├── TrendChart.tsx                             SVG bar chart + 7-day rolling average line
+    │   ├── HabitBreakdown.tsx                         Per-habit mini cards with sparklines
+    │   ├── Sparkline.tsx                              Reusable tiny SVG line chart
+    │   ├── WeakestHabits.tsx                          Weakest habits insight callout
+    │   └── useDashboardData.ts                        Data computation hook (all useMemo)
+    ├── sleep/
+    │   ├── SleepPage.tsx                              Sleep tracking page
+    │   ├── SleepLogModal.tsx                          Log sleep entry
+    │   ├── SleepWeekView.tsx                          Weekly sleep visualization
+    │   └── SleepStats.tsx                             Sleep statistics
+    ├── exercise/
+    │   ├── ExercisePage.tsx                           Exercise tracking page
+    │   ├── ExerciseLogModal.tsx                       Log exercise entry
+    │   └── ExerciseStats.tsx                          Exercise statistics
+    ├── journal/
+    │   ├── JournalPage.tsx                            Journal entry page
+    │   └── JournalEntryModal.tsx                      Create/edit journal entry
+    ├── nutrition/
+    │   ├── NutritionPage.tsx                          Nutrition tracking page
+    │   ├── NutritionMealModal.tsx                     Log meal
+    │   └── NutritionStats.tsx                         Nutrition statistics
+    ├── modals/
+    │   └── WeeklyGoalModal.tsx                        Goal setting modal (used by Navigation)
+    ├── ui/
+    │   ├── index.ts                                   Barrel export
+    │   ├── Button.tsx                                 Generic button
+    │   ├── Card.tsx                                   Card wrapper
+    │   ├── Input.tsx                                  Form input
+    │   ├── ProgressRing.tsx                           SVG progress ring
+    │   ├── ThemeToggle.tsx                            Light/dark toggle
+    │   ├── ControlPanel.tsx                           OLD gear icon panel (not used in new layout)
+    │   └── WeeklyGoalModal.tsx                        OLD goal modal (not used)
+    ├── onboarding/
+    │   └── OnboardingFlow.tsx                         4-step wizard
+    └── features/                                      DEAD — skeleton components, not imported
+        ├── WeeklyProgress.tsx
+        ├── HabitInsights.tsx
+        └── SocialHub.tsx
+```
+
+### Dead code (not imported from any live path)
+
+```
+src/components/features/              WeeklyProgress, HabitInsights, SocialHub (skeleton mockups)
+src/components/ui/ControlPanel.tsx    Old gear icon panel, replaced by Navigation settings
+src/components/ui/WeeklyGoalModal.tsx Old goal modal, replaced by modals/WeeklyGoalModal
+src/services/storage.ts              Old StorageService, replaced by repositories
+```
+
+### Test files
+
+```
+src/setupTests.ts                                                Jest setup
+src/db/__tests__/migration.test.ts                              Migration tests
+src/repositories/__tests__/habitRepository.test.ts              Habit repository tests
+src/repositories/__tests__/sleepRepository.test.ts              Sleep repository tests
+src/components/calendar/__tests__/HabitCalendarGrid.test.tsx    Grid tests
+src/components/modals/__tests__/WeeklyGoalModal.test.tsx        Goal modal tests
+src/components/ui/__tests__/ControlPanel.test.tsx               Control panel tests
+src/components/dashboard/__tests__/DashboardPage.test.tsx       Dashboard tests
+src/components/sleep/__tests__/SleepPage.test.tsx               Sleep page tests
+src/components/exercise/__tests__/ExercisePage.test.tsx         Exercise page tests
+src/components/journal/__tests__/JournalPage.test.tsx           Journal page tests
+src/components/nutrition/__tests__/NutritionPage.test.tsx       Nutrition page tests
+```
+
+## Data Model
+
+From `src/types/index.ts`:
 
 ```typescript
 interface HabitV2 {
@@ -52,208 +229,217 @@ interface HabitV2 {
   category: string;
   streak: number;
   bestStreak: number;
-  completions: Record<string, CompletionData>;
+  completions: Record<string, CompletionData>;  // key format: 'yyyy-MM-dd'
   createdAt: Date;
-  settings: { target?: number; unit?: string; difficulty: 'easy' | 'medium' | 'hard'; reminders?: boolean; };
-  analytics: { totalCompletions: number; averagePerWeek: number; bestWeek: Date | null; };
+  settings: {
+    target?: number;
+    unit?: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    reminders?: boolean;
+  };
+  analytics: {
+    totalCompletions: number;
+    averagePerWeek: number;
+    bestWeek: Date | null;
+  };
+}
+
+interface CompletionData {
+  completed: boolean;
+  value?: number;
+  completedAt?: Date;
 }
 
 interface UserPreferencesV2 {
   theme?: 'light' | 'dark';
   showOnboarding: boolean;
   name?: string;
-  weeklyGoal?: number;
+  weeklyGoal?: number;            // 50-100, optional
   celebrationLevel: 'minimal' | 'normal' | 'extra';
   insights: boolean;
   installDate?: Date;
+  migrationVersion?: number;      // Tracks old→new DB migration
+}
+
+interface SleepEntry {
+  id: string;
+  date: string;                   // 'yyyy-MM-dd'
+  bedtime: string;                // ISO datetime
+  wakeTime: string;               // ISO datetime
+  durationMinutes: number;
+  quality: 1 | 2 | 3 | 4 | 5;
+  notes?: string;
+  factors: string[];              // 'caffeine' | 'exercise' | 'stress' | etc.
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ExerciseEntry {
+  id: string;
+  date: string;
+  type: string;                   // 'running' | 'cycling' | 'swimming' | etc.
+  durationMinutes: number;
+  intensity: 'low' | 'moderate' | 'high';
+  caloriesBurned?: number;
+  notes?: string;
+  heartRateAvg?: number;
+  heartRateMax?: number;
+  distance?: number;
+  distanceUnit?: 'miles' | 'km';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface JournalEntry {
+  id: string;
+  date: string;
+  title: string;
+  content: string;
+  mood: 1 | 2 | 3 | 4 | 5;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface NutritionMeal {
+  id: string;
+  date: string;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  name: string;
+  notes?: string;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  foodItems: NutritionFoodItem[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface NutritionFoodItem {
+  id: string;
+  mealId: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  servingSize?: string;
+  createdAt: Date;
 }
 ```
 
-## Recurring Issues & Solutions
+## State Management
 
-### 1. JSX Parsing Errors with Special Characters
-**Issue**: `Unexpected token. Did you mean '{'>'}' or '&gt;'?` when using `>` in JSX
-**Solution**: Always escape special characters in JSX as `{'>'}` instead of raw `>`
-**Files Affected**: MonthlyCalendarView.tsx:260
+### habitStore (Zustand)
 
-### 2. Tooltip Positioning and Cutoffs
-**Issue**: Tooltips getting cut off at screen edges, especially in monthly calendar
-**Initial Attempts**: 
-  - Mouse coordinate-based positioning (caused glitches)
-  - Fixed positioning with viewport checks
-**Final Solution**: 
-  - Smart positioning based on date position (`date.getDate() > 15` determines left vs right)
-  - Enhanced backdrop blur and translucency (`bg-gray-900/95` instead of `bg-gray-900`)
-  - Converted monthly view from popup to full-screen page to eliminate constraints
-**Files Affected**: MonthlyCalendarPage.tsx
+**State:** `habits: HabitV2[]`, `achievements: Achievement[]`, `isLoading: boolean`, `error: string | null`
 
-### 3. Current Day Color Logic
-**Issue**: Current day was showing red color when user hadn't completed habits yet
-**Solution**: Modified color logic to always show current day as gray/transparent regardless of completion
-**Code**: `if (isFuture || isToday) { return theme.isDark ? 'bg-gray-700/50' : 'bg-gray-200/50'; }`
-**Files Affected**: MonthlyCalendarPage.tsx
+**Actions:** `loadData()`, `addHabit()`, `updateHabit()`, `deleteHabit()`, `completeHabit()`, `checkAchievements()`, `setError()`, `clearError()`
 
-### 4. Build Compilation Errors
-**Issue**: Unused imports and variables causing ESLint warnings
-**Solution**: Systematic cleanup of unused imports: Sparkles, useRef, isSameMonth, Button, AnimatePresence, and unused local variables
-**Prevention**: Regular linting with `npm run lint` and `npm run typecheck`
+`loadData()` runs `runMigration()` first (no-op if already done), then parallel fetch of habits + achievements from repositories.
 
-### 5. Installation Date Color Rules
-**Issue**: Historical dates before app installation showing red (missed days) 
-**Solution**: Added `installDate` field to UserPreferencesV2 and logic to only apply coloring from installation date forward
-**Implementation**: 
-```typescript
-const appInstallDate = installDate || new Date();
-if (date < appInstallDate) {
-  return theme.isDark ? 'bg-gray-700/50' : 'bg-gray-200/50';
-}
-```
+### preferencesStore (Zustand)
 
-### 6. UI/UX Overhaul (August 2025)
-**Goal**: Make the weekly grid the hero, improve interaction patterns, and enhance accessibility
-**Key Changes**:
-- Moved week navigation to dedicated spanning row above weekday headers
-- Made progress bar conditional - only shows when weekly goal is set with smooth animation
-- Replaced dropdown goal setting with professional modal popup
-- Enhanced grid cells with proper hit targets (≥48px) and keyboard navigation
-- Improved button hierarchy: primary (Add Habit), secondary (Monthly View), tertiary (navigation)
-- Implemented AA-compliant focus rings and contrast ratios
-- Made control panel collapsed by default with gear icon toggle
-- Added design token system for consistent spacing, colors, and typography
+**State:** `preferences: UserPreferencesV2`, `onboarding: OnboardingState`, `isLoaded: boolean`
 
-**Files Modified**: HabitCalendarGrid.tsx, ControlPanel.tsx, MonthlyCalendarPage.tsx, WeeklyGoalModal.tsx (new), useThemeClasses.ts, tokens.ts (new)
-**Testing**: Comprehensive unit tests added for new functionality (HabitCalendarGrid.test.tsx, WeeklyGoalModal.test.tsx, ControlPanel.test.tsx)
+**Actions:** `loadPreferences()`, `updatePreferences()`, `updateOnboarding()`
 
-## Design Patterns & Conventions
+### Feature Stores (sleepStore, exerciseStore, journalStore, nutritionStore)
 
-### Color Coding System
-- **Red**: 0% completion (missed days)
-- **Yellow**: Some progress (1-59%)
-- **Green**: Good progress (60-99%)
-- **Dark Green**: Perfect day (100%)
-- **Gray**: Current day, future days, or pre-installation dates
+Built using `createFeatureStore` factory. Each has:
 
-### Animation Patterns
-- Framer Motion for all animations
-- Staggered delays for list items (`delay: habitIndex * 0.05`)
-- Spring animations for interactive elements
-- Gradient text effects for high achievement states
+**State:** `entries: T[]`, `isLoading: boolean`, `error: string | null`
 
-### State Management
-- Zustand store in `habitStore.ts`
-- Service layer abstraction for storage operations
-- Error handling with user-friendly messages
-- Loading states for async operations
+**Actions:** `loadEntries()`, `addEntry()`, `updateEntry()`, `deleteEntry()`, `clearError()`
 
-## Commands to Run
+## Service Layer
 
-- **Development**: `npm run dev`
-- **Build**: `npm run build`
-- **Lint**: `npm run lint`
-- **Type Check**: `npm run typecheck`
+### habitService.ts
 
-## Testing Requirements
+- `HABIT_TEMPLATES`: 10 built-in templates (Exercise, Read, Meditate, Drink Water, Sleep Early, Code, Journal, Walk, Stretch, Learn Something New)
+- `createHabit(template, customName?)` — generates UUID, returns new HabitV2
+- `completeHabit(habit, date, value?)` — **toggles** completion, recalculates analytics
+- `updateAnalytics(habit)` — recalculates streak, bestStreak, totalCompletions, averagePerWeek, bestWeek
+- `getWeeklyProgress(habits)` — counts completions across current week
+- `getTodayProgress(habits)` — counts today's completions
 
-### Unit Testing for Major Changes
-When implementing **big functionality or significant UI changes**, Claude MUST:
+### achievementService.ts
 
-1. **Create comprehensive unit tests** for the new functionality
-2. **Test all critical paths** and edge cases
-3. **Ensure 100% test coverage** for new components/functions
-4. **Continue working until ALL tests pass green** - do not stop until this is achieved
-5. **Clean up test files** after successful implementation (remove debugging artifacts, organize test structure)
+8 achievements: first_habit, week_warrior, consistency_king, perfectionist, century_club, habit_collector, comeback_kid, early_bird.
 
-**What constitutes "big functionality/UI changes":**
-- New components or major component rewrites
-- New features (like calendar views, progress tracking systems)
-- State management changes affecting multiple components
-- Data structure modifications
-- Complex user interactions or animations
-- Integration of new libraries or frameworks
+## Theming / Styling
 
-**What does NOT require unit tests:**
-- Small bug fixes (typos, styling tweaks)
-- Minor UI adjustments (color changes, spacing)
-- Simple refactoring without functional changes
-- Documentation updates
+- **ThemeContext**: Provides `{ theme, effectiveTheme, setTheme }`. Defaults to `'dark'`. Applies `.dark` class on `document.documentElement`.
+- **useThemeClasses**: Returns pre-built Tailwind class strings for cards, buttons, inputs, text, calendar cells, etc.
+- **tokens.ts**: Design token system — 8pt spacing scale, blue primary palette, light/dark surface colors.
+- **index.css**: Three `@layer` blocks — base, components, utilities.
 
-**Testing Framework:**
-- Use existing testing setup in the project (check for Jest, Vitest, React Testing Library)
-- If no testing framework exists, set up Vitest with React Testing Library
-- Focus on testing behavior, not implementation details
-- Mock external dependencies appropriately
+## Monthly Calendar Color Coding
 
-**Test Organization:**
-- Place test files in `__tests__` directories or use `.test.tsx` suffix
-- Group related tests logically
-- Use descriptive test names that explain the expected behavior
-- Include both positive and negative test cases
+In `MonthlyCalendarPage.tsx:getDayColor()`:
 
-## File Structure Priority
+| Condition | Color |
+|---|---|
+| Future day or today | Gray |
+| Before installDate | Gray |
+| No habits exist | Gray |
+| 0% completed (past) | Red |
+| 100% completed | Dark green |
+| >60% completed | Green |
+| 1-60% completed | Yellow |
 
-When working on features, prioritize these key files:
-1. `src/components/calendar/HabitCalendarGrid.tsx` - Main weekly interface
-2. `src/components/pages/MonthlyCalendarPage.tsx` - Monthly view
-3. `src/App.tsx` - Application routing and state
-4. `src/stores/habitStore.ts` - Global state management
-5. `src/types/index.ts` - TypeScript interfaces
+## Testing
 
-## Feature Ideas & Implementation Details
+**Framework**: Jest (via CRA) + React Testing Library + @testing-library/user-event + fake-indexeddb
 
-### 1. Weekly Progress (Current Feature - 4/5 Stars)
-**Current Implementation**: Enhanced progress tracking with customizable weekly goals
-- **Features**: User-configurable goals (50%-100%), real-time progress calculation, gradient progress bars
-- **Future Enhancements**: 
-  - Streak tracking and visualizations
-  - Weekly goal recommendations based on historical performance
-  - Integration with habit difficulty ratings for smart goal adjustment
+**Setup** (`src/setupTests.ts`): Imports jest-dom, mocks matchMedia, ResizeObserver, IntersectionObserver.
 
-### 2. AI Insights (Concept - 5/5 Stars)
-**Vision**: Intelligent analysis of habit patterns and personalized recommendations
-- **Core Features**:
-  - Pattern recognition (e.g., "You complete 40% more habits on weekdays")
-  - Habit correlation analysis ("Completing Exercise increases your Reading completion by 65%")
-  - Personalized goal recommendations
-  - Behavioral trend analysis with actionable insights
-- **Implementation**: Machine learning analysis of completion data, natural language insights generation
-- **UI/UX**: Dashboard with cards showing key insights, trend graphs, and recommendation notifications
+**Run**: `npm test` (watch mode by default)
 
-### 3. Social Hub (Concept - 5/5 Stars) 
-**Vision**: Community-driven habit tracking with social accountability
-- **Core Features**:
-  - Habit buddy system for mutual accountability
-  - Anonymous community leaderboards by habit category
-  - Group challenges and competitions
-  - Achievement sharing and celebration
-  - Community habit templates and recommendations
-- **Implementation**: Social features with privacy controls, friend/buddy matching system
-- **UI/UX**: Social feed, buddy comparison views, community challenges page
+### Testing Requirements
 
-### Removed/Deprecated Features
+When implementing **significant features or major UI changes**, create comprehensive unit tests:
+- Test all critical paths and edge cases
+- Continue until all tests pass
+- Place test files in `__tests__/` directories with `.test.tsx` suffix
+- Wrap components in `<ThemeProvider>` for rendering
+- Mock Zustand stores when testing components that use them
+- Use `fake-indexeddb` for repository/migration tests
 
-#### Budget Tracker (Removed - 3/5 Stars)
-- **Reason for Removal**: Outside core habit tracking focus, better served by dedicated financial apps
-- **Original Concept**: Spending habit tracking with budget goals and financial habit formation
+Small bug fixes, styling tweaks, and minor adjustments do not need tests.
 
-#### Time Tracker (Removed - 4/5 Stars) 
-- **Reason for Removal**: Complex feature requiring significant dev effort, time tracking apps already exist
-- **Original Concept**: Pomodoro integration with habit completion time tracking
+## Known Issues & Quirks
 
-#### Data Export (Removed - 2/5 Stars)
-- **Reason for Removal**: Low user demand, complex implementation for CSV/JSON export functionality
-- **Original Concept**: Export completion data for external analysis
+### 1. Sleep, Exercise, Nutrition tabs are hidden
 
-#### Progress Bar Designs (Removed - 5/5 Stars)
-- **Reason for Removal**: Functionality absorbed into main progress bar implementation
-- **Achievement**: Successfully implemented enhanced gradient progress bars with animations
+These features are fully built and functional but hidden from the nav bar. Routes still work via direct URL (e.g., `/#/sleep`). Only Habits, Journal, and Dashboard tabs are shown.
 
-## Notes for Future Development
+### 2. Old ControlPanel and ui/WeeklyGoalModal are dead code
 
-- Always test tooltip positioning on different screen sizes
-- Run linting after making changes to catch unused imports
-- Maintain the installation date logic for historical accuracy
-- Keep animations smooth and purposeful
-- Preserve the dark theme as default setting
-- Test both weekly and monthly views when making data structure changes
-- Weekly goal now configurable via dropdown Actions tab (50%-100% range)
-- Progress bar components made more compact and consistent across the app
+`ControlPanel.tsx` and `ui/WeeklyGoalModal.tsx` were replaced by `Navigation.tsx` and `modals/WeeklyGoalModal.tsx`. The old files are still present but not imported.
+
+### 3. storage.ts is deprecated
+
+`src/services/storage.ts` is the old StorageService. All data access now goes through the repository layer. The file is kept for reference but not imported from any live path.
+
+### 4. Tailwind config custom colors are unused
+
+`tailwind.config.js` defines `primary` (coral), `secondary` (teal), `success` (green), `accent` (amber) color palettes that are not used anywhere. The actual UI uses Tailwind's built-in color scales.
+
+### 5. Chrome Extension setup is minimal
+
+`manifest.json` exists with `chrome_url_overrides.newtab` and `storage` permission. No background scripts, service workers, popup pages, or other extension-specific code.
+
+## Conventions
+
+- **Week starts on Monday**: `startOfWeek(date, { weekStartsOn: 1 })` used consistently
+- **Date key format**: Completions keyed by `format(date, 'yyyy-MM-dd')` from date-fns
+- **Functional components only**: All components are `React.FC<Props>` with hooks
+- **Repository singletons**: Each repository exports a singleton instance
+- **Theme classes via hook**: Components use `useThemeClasses()` for all themed styles
+- **Framer Motion everywhere**: All animations use Framer Motion
+- **Staggered animations**: List items use `delay: index * 0.05` pattern
+- **Spring physics**: Interactive elements use `type: "spring"` with `stiffness` and `damping`
+- **New components**: Place in the appropriate subdirectory under `src/components/`
+- **Test files**: Place in `__tests__/` directory adjacent to the component. Always wrap in `<ThemeProvider>`.

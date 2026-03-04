@@ -40,11 +40,10 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
-      // Only update if the date actually changed (to avoid unnecessary re-renders)
       if (format(now, 'yyyy-MM-dd') !== format(currentDate, 'yyyy-MM-dd')) {
         setCurrentDate(now);
       }
-    }, 60000); // Check every minute
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [currentDate]);
@@ -78,11 +77,11 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!focusedCell) return;
-      
+
       const { habitIndex, dayIndex } = focusedCell;
       let newHabitIndex = habitIndex;
       let newDayIndex = dayIndex;
-      
+
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
@@ -113,12 +112,12 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
           setFocusedCell(null);
           break;
       }
-      
+
       if (newHabitIndex !== habitIndex || newDayIndex !== dayIndex) {
         setFocusedCell({ habitIndex: newHabitIndex, dayIndex: newDayIndex });
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [focusedCell, habits, days, handleCellClick, isFuture]);
@@ -159,13 +158,13 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
 
   // Calculate weekly progress
   const calculateWeeklyProgress = () => {
-    const totalPossibleCompletions = habits.length * 7; // 7 days per week
+    const totalPossibleCompletions = habits.length * 7;
     if (totalPossibleCompletions === 0) return { completed: 0, total: 0, percentage: 0 };
-    
+
     const weeklyCompletions = days.reduce((total, day) => {
       return total + habits.filter(habit => isCompleted(habit, day)).length;
     }, 0);
-    
+
     return {
       completed: weeklyCompletions,
       total: totalPossibleCompletions,
@@ -178,14 +177,13 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   // Debug grid alignment (dev-only)
   useEffect(() => {
     if (!DEBUG_GRID) return;
-    
-    const checkAlignment = () => {
-      // get header day cells & first body row day cells
-      const headerDays = Array.from(document.querySelectorAll('[data-grid=header] [data-col=day]')) as HTMLElement[];
-      const firstRowDays = Array.from(document.querySelectorAll('[data-grid=row]:first-of-type [data-col=day]')) as HTMLElement[];
 
-      headerDays.forEach((hd, i) => {
-        const bd = firstRowDays[i];
+    const checkAlignment = () => {
+      const headerCells = Array.from(document.querySelectorAll('[data-grid=header] [data-col=day]')) as HTMLElement[];
+      const firstRowCells = Array.from(document.querySelectorAll('[data-grid=row]:first-of-type [data-col=day]')) as HTMLElement[];
+
+      headerCells.forEach((hd, i) => {
+        const bd = firstRowCells[i];
         if (!bd) return;
         const x1 = Math.round(hd.getBoundingClientRect().left);
         const x2 = Math.round(bd.getBoundingClientRect().left);
@@ -195,15 +193,16 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
       });
     };
 
-    // Check after initial render and on resize
     const timer = setTimeout(checkAlignment, 100);
     window.addEventListener('resize', checkAlignment);
-    
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', checkAlignment);
     };
   }, [habits.length]);
+
+  const todayColBg = theme.isDark ? 'bg-blue-500/5' : 'bg-blue-50/50';
 
   return (
     <div className="w-full max-w-7xl mx-auto p-8">
@@ -219,7 +218,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
             Keegan's Trackr
           </h1>
         </div>
-        
+
         {/* Conditional Progress Bar - only show when goal is set */}
         {preferences.weeklyGoal && (
           <motion.div
@@ -234,7 +233,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                 {weeklyProgress.completed}/{weeklyProgress.total} completed
               </div>
               <div className={`text-sm font-medium ${theme.textPrimary}`}>
-                {weeklyProgress.percentage}% of {preferences.weeklyGoal}% goal
+                Weekly goal: {preferences.weeklyGoal}%
               </div>
             </div>
             <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -244,13 +243,12 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                 animate={{ width: `${weeklyProgress.percentage}%` }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                {/* Animated shine effect for better visual feedback */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                   initial={{ x: '-100%' }}
                   animate={{ x: '100%' }}
-                  transition={{ 
-                    duration: 1.5, 
+                  transition={{
+                    duration: 1.5,
                     delay: 1,
                     ease: "easeInOut"
                   }}
@@ -261,23 +259,20 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
         )}
       </motion.div>
 
-      {/* Enhanced Calendar Grid */}
-      <motion.div 
+      {/* Calendar Table */}
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
         className={`${theme.card} overflow-hidden shadow-xl`}
         style={{
-          '--grid-cols': 'minmax(160px, 200px) repeat(7, 1fr)',
           '--accent': theme.isDark ? '#60a5fa' : '#3b82f6',
-          '--grid-bg': theme.isDark ? '#1e293b' : '#ffffff',
-          '--divider': theme.isDark ? '#475569' : '#e2e8f0'
         } as React.CSSProperties}
       >
-        {/* Week Navigation Row - spans full width */}
-        <div className={`border-b ${theme.calendarHeader}`}>
+        {/* Week Navigation Row */}
+        <div className={`border-b ${theme.isDark ? 'border-slate-700' : 'border-gray-200'} ${theme.isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
           <div className="flex items-center justify-center py-3">
-            <button 
+            <button
               onClick={() => handleWeekNavigation('prev')}
               className={`p-2 ${theme.btnTertiary} rounded-lg mr-4`}
             >
@@ -286,13 +281,13 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
             <span className={`text-lg font-medium ${theme.textPrimary} min-w-[140px] text-center`}>
               {format(startDate, 'MMM d')}–{format(addDays(startDate, 6), 'd')}
             </span>
-            <button 
+            <button
               onClick={() => handleWeekNavigation('next')}
               className={`p-2 ${theme.btnTertiary} rounded-lg ml-4`}
             >
               →
             </button>
-            <button 
+            <button
               onClick={handleTodayClick}
               className={`ml-4 px-3 py-1 text-sm ${theme.isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} hover:underline transition-colors`}
             >
@@ -300,200 +295,209 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
             </button>
           </div>
         </div>
-        
-        {/* Header Row - Habits and Days */}
-        <div className={`grid border-b ${theme.calendarHeader}`} style={{ gridTemplateColumns: 'var(--grid-cols)' }} data-grid="header">
-          <div className={`p-4 font-medium ${theme.textPrimary}`}>
-            Habits
-          </div>
-          {days.map((date) => (
-            <div
-              key={date.toISOString()}
-              className={`p-4 text-center font-medium transition-all duration-200 ${
-                isToday(date) 
-                  ? `${theme.calendarToday} ${theme.isDark ? 'text-blue-300' : 'text-blue-700'}`
-                  : theme.textSecondary
-              }`}
-              style={{ borderLeft: '1px solid var(--divider)' }}
-              data-col="day"
-            >
-              <div className="text-xs uppercase tracking-wider mb-1 opacity-75">
-                {format(date, 'EEE')}
-              </div>
-              <div className={`text-base font-semibold ${isToday(date) ? (theme.isDark ? 'text-blue-300' : 'text-blue-700') : ''}`}>
-                {format(date, 'd')}
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Habit Rows */}
-        <AnimatePresence mode="popLayout">
-          {habits.map((habit, habitIndex) => (
-            <motion.div
-              key={habit.id}
-              data-habit-id={habit.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              transition={{ duration: 0.3, delay: habitIndex * 0.05 }}
-              className={`grid border-b last:border-b-0 ${theme.calendarCell} group hover:shadow-sm transition-all duration-200`}
-              style={{ gridTemplateColumns: 'var(--grid-cols)' }}
-              data-grid="row"
-            >
-              {/* Habit Name Cell */}
-              <div className={`p-4 ${theme.calendarCell} relative min-h-[48px] flex items-center`}>
-                {editingHabit === habit.id ? (
-                  <input
-                    type="text"
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onBlur={handleSaveEdit}
-                    onKeyDown={handleKeyPress}
-                    className={`${theme.input} w-full font-medium`}
-                    autoFocus
-                  />
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <span className={`${theme.textPrimary} font-semibold text-lg`}>
-                      {habit.name}
-                    </span>
-                    <div className="relative">
-                      <button
-                        onClick={() => setHabitMenuOpen(habitMenuOpen === habit.id ? null : habit.id)}
-                        className={`opacity-0 group-hover:opacity-100 p-2 ${theme.hoverBg} rounded-lg transition-all duration-200 hover:scale-105`}
+        {/* Table */}
+        <table className="w-full" style={{ tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '180px' }} />
+            {days.map((date) => (
+              <col key={date.toISOString()} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr className={`border-b ${theme.isDark ? 'border-slate-700 bg-slate-800' : 'border-gray-200 bg-gray-50'}`} data-grid="header">
+              <th className={`px-4 py-3 text-left font-medium ${theme.textPrimary}`}>
+                Habits
+              </th>
+              {days.map((date) => (
+                <th
+                  key={date.toISOString()}
+                  className={`px-2 py-3 text-center font-medium transition-all duration-200 ${
+                    isToday(date)
+                      ? `${theme.isDark ? 'text-blue-300 bg-blue-900/20' : 'text-blue-700 bg-blue-50/80'}`
+                      : theme.textSecondary
+                  }`}
+                  data-col="day"
+                >
+                  <div className="text-xs uppercase tracking-wider mb-1 opacity-75">
+                    {format(date, 'EEE')}
+                  </div>
+                  <div className={`text-base font-semibold ${isToday(date) ? (theme.isDark ? 'text-blue-300' : 'text-blue-700') : ''}`}>
+                    {format(date, 'd')}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <AnimatePresence mode="popLayout">
+              {habits.map((habit, habitIndex) => (
+                <motion.tr
+                  key={habit.id}
+                  data-habit-id={habit.id}
+                  data-grid="row"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, delay: habitIndex * 0.05 }}
+                  className={`border-b last:border-b-0 ${theme.isDark ? 'border-slate-700/50' : 'border-gray-100'} group hover:${theme.isDark ? 'bg-slate-750' : 'bg-gray-50/50'} transition-colors duration-200`}
+                >
+                  {/* Habit Name Cell */}
+                  <td className={`px-4 py-2 ${theme.isDark ? 'bg-slate-800' : 'bg-white'} relative`}>
+                    {editingHabit === habit.id ? (
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={handleSaveEdit}
+                        onKeyDown={handleKeyPress}
+                        className={`${theme.input} w-full font-medium`}
+                        autoFocus
+                      />
+                    ) : (
+                      <div className="flex items-center justify-between min-h-[40px]">
+                        <span className={`${theme.textPrimary} font-semibold text-lg truncate`}>
+                          {habit.name}
+                        </span>
+                        <div className="relative flex-shrink-0 ml-2">
+                          <button
+                            onClick={() => setHabitMenuOpen(habitMenuOpen === habit.id ? null : habit.id)}
+                            className={`opacity-0 group-hover:opacity-100 p-1.5 ${theme.hoverBg} rounded-lg transition-all duration-200 hover:scale-105`}
+                          >
+                            <MoreHorizontal className={`w-4 h-4 ${theme.textMuted}`} />
+                          </button>
+
+                          <AnimatePresence>
+                            {habitMenuOpen === habit.id && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className={`absolute right-0 bottom-full mb-2 ${theme.card} py-2 z-50 min-w-[140px] shadow-2xl`}
+                              >
+                                <button
+                                  onClick={() => handleStartEdit(habit)}
+                                  className={`flex items-center gap-3 w-full px-4 py-3 text-sm ${theme.textPrimary} ${theme.hoverBg} transition-colors`}
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                  Edit Name
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    onDeleteHabit(habit.id);
+                                    setHabitMenuOpen(null);
+                                  }}
+                                  className={`flex items-center gap-3 w-full px-4 py-3 text-sm ${theme.isDark ? 'text-red-400 hover:bg-red-500/20' : 'text-red-600 hover:bg-red-50'} transition-colors`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Delete
+                                </button>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    )}
+                  </td>
+
+                  {/* Day Cells */}
+                  {days.map((date, dayIndex) => {
+                    const completed = isCompleted(habit, date);
+                    const future = isFuture(date);
+                    const cellKey = `${habit.id}-${format(date, 'yyyy-MM-dd')}`;
+                    const isHovered = hoveredCell?.habitId === habit.id && hoveredCell?.date === format(date, 'yyyy-MM-dd');
+                    const isFocused = focusedCell?.habitIndex === habitIndex && focusedCell?.dayIndex === dayIndex;
+
+                    return (
+                      <td
+                        key={cellKey}
+                        tabIndex={0}
+                        className={`cell px-1 py-2 text-center cursor-pointer relative transition-colors duration-200 ${
+                          future ? 'cursor-not-allowed opacity-40' : ''
+                        } ${isToday(date) ? todayColBg : ''}`}
+                        data-col="day"
+                        onClick={() => {
+                          if (!future) {
+                            handleCellClick(habit.id, date);
+                            setFocusedCell({ habitIndex, dayIndex });
+                          }
+                        }}
+                        onFocus={() => setFocusedCell({ habitIndex, dayIndex })}
+                        onMouseEnter={() => !future && setHoveredCell({ habitId: habit.id, date: format(date, 'yyyy-MM-dd') })}
+                        onMouseLeave={() => setHoveredCell(null)}
                       >
-                        <MoreHorizontal className={`w-5 h-5 ${theme.textMuted}`} />
-                      </button>
-                      
-                      <AnimatePresence>
-                        {habitMenuOpen === habit.id && (
+                        <div className="flex items-center justify-center">
                           <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                            className={`absolute right-0 bottom-full mb-2 ${theme.card} py-2 z-50 min-w-[140px] shadow-2xl`}
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 border-2 ${
+                              completed
+                                ? 'bg-blue-500 border-blue-500'
+                                : (isHovered || isFocused)
+                                ? `border-blue-400 bg-blue-500/10`
+                                : `border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500`
+                            } shadow-sm hover:shadow-md`}
+                            initial={false}
+                            animate={{
+                              scale: completed ? 1.05 : 1,
+                            }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 400,
+                              damping: 30
+                            }}
+                            whileHover={!future ? { scale: 1.02 } : {}}
+                            whileTap={!future ? { scale: 0.98 } : {}}
                           >
-                            <button
-                              onClick={() => handleStartEdit(habit)}
-                              className={`flex items-center gap-3 w-full px-4 py-3 text-sm ${theme.textPrimary} ${theme.hoverBg} transition-colors`}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                              Edit Name
-                            </button>
-                            <button
-                              onClick={() => {
-                                onDeleteHabit(habit.id);
-                                setHabitMenuOpen(null);
-                              }}
-                              className={`flex items-center gap-3 w-full px-4 py-3 text-sm ${theme.isDark ? 'text-red-400 hover:bg-red-500/20' : 'text-red-600 hover:bg-red-50'} transition-colors`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              Delete
-                            </button>
+                            <AnimatePresence mode="wait">
+                              {completed && (
+                                <motion.div
+                                  initial={{ scale: 0, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  exit={{ scale: 0, opacity: 0 }}
+                                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                                >
+                                  <svg
+                                    className="w-5 h-5 text-white"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={3}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Day Cells */}
-              {days.map((date, dayIndex) => {
-                const completed = isCompleted(habit, date);
-                const future = isFuture(date);
-                const cellKey = `${habit.id}-${format(date, 'yyyy-MM-dd')}`;
-                const isHovered = hoveredCell?.habitId === habit.id && hoveredCell?.date === format(date, 'yyyy-MM-dd');
-                const isFocused = focusedCell?.habitIndex === habitIndex && focusedCell?.dayIndex === dayIndex;
-                
-                return (
-                  <div
-                    key={cellKey}
-                    tabIndex={0}
-                    className={`cell p-4 flex items-center justify-center cursor-pointer relative min-h-[48px] overflow-hidden ${
-                      future ? 'cursor-not-allowed opacity-40' : ''
-                    } ${isToday(date) ? 'bg-blue-500/5 dark:bg-blue-400/5' : ''}`}
-                    style={{ borderLeft: '1px solid var(--divider)' }}
-                    data-col="day"
-                    onClick={() => {
-                      if (!future) {
-                        handleCellClick(habit.id, date);
-                        setFocusedCell({ habitIndex, dayIndex });
-                      }
-                    }}
-                    onFocus={() => setFocusedCell({ habitIndex, dayIndex })}
-                    onMouseEnter={() => !future && setHoveredCell({ habitId: habit.id, date: format(date, 'yyyy-MM-dd') })}
-                    onMouseLeave={() => setHoveredCell(null)}
-                  >
-                    <motion.div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 border-2 ${
-                        completed 
-                          ? 'bg-blue-500 border-blue-500'
-                          : (isHovered || isFocused)
-                          ? `border-blue-400 bg-blue-500/10`
-                          : `border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500`
-                      } shadow-sm hover:shadow-md`}
-                      initial={false}
-                      animate={{
-                        scale: completed ? 1.05 : 1,
-                      }}
-                      transition={{ 
-                        type: "spring", 
-                        stiffness: 400, 
-                        damping: 30
-                      }}
-                      whileHover={!future ? { scale: 1.02 } : {}}
-                      whileTap={!future ? { scale: 0.98 } : {}}
-                    >
-                      <AnimatePresence mode="wait">
-                        {completed && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                          >
-                            <svg
-                              className="w-5 h-5 text-white"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={3}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  </div>
-                );
-              })}
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                        </div>
+                      </td>
+                    );
+                  })}
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+        </table>
 
         {/* Enhanced Empty State */}
         {habits.length === 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="p-16 text-center"
           >
-            <motion.div 
+            <motion.div
               className="text-6xl mb-6"
-              animate={{ 
+              animate={{
                 rotate: [0, 10, -10, 0],
                 scale: [1, 1.1, 1]
               }}
-              transition={{ 
+              transition={{
                 duration: 2,
                 repeat: Infinity,
                 repeatDelay: 3

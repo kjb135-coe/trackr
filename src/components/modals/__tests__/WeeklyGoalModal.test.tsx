@@ -32,7 +32,7 @@ describe('WeeklyGoalModal', () => {
       );
 
       expect(screen.getByText('Set Weekly Goal')).toBeInTheDocument();
-      expect(screen.getByText('85%')).toBeInTheDocument();
+      expect(screen.getAllByText('85%').length).toBeGreaterThanOrEqual(1);
     });
 
     it('does not render when isOpen is false', () => {

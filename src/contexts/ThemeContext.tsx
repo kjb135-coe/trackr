@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useHabitStore } from '../stores/habitStore';
+import { usePreferencesStore } from '../stores/preferencesStore';
 
 type Theme = 'light' | 'dark';
 
@@ -20,7 +20,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { preferences, updatePreferences } = useHabitStore();
+  const { preferences, updatePreferences } = usePreferencesStore();
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {

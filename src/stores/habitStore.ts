@@ -1,15 +1,15 @@
 import { create } from 'zustand';
-import { HabitV2, UserPreferencesV2, OnboardingState, Achievement } from '../types';
-import { storageService } from '../services/storage';
+import { HabitV2, Achievement } from '../types';
+import { habitRepository } from '../repositories/habitRepository';
+import { achievementRepository } from '../repositories/achievementRepository';
 import { habitService } from '../services/habitService';
 import { achievementService } from '../services/achievementService';
+import { runMigration } from '../db/migration';
 import { logger } from '../utils/logger';
 
 interface HabitStore {
   // State
   habits: HabitV2[];
-  preferences: UserPreferencesV2;
-  onboarding: OnboardingState;
   achievements: Achievement[];
   isLoading: boolean;
   error: string | null;
@@ -20,8 +20,6 @@ interface HabitStore {
   updateHabit: (habit: HabitV2) => Promise<void>;
   deleteHabit: (habitId: string) => Promise<void>;
   completeHabit: (habitId: string, date?: Date, value?: number) => Promise<void>;
-  updatePreferences: (preferences: Partial<UserPreferencesV2>) => Promise<void>;
-  updateOnboarding: (onboarding: Partial<OnboardingState>) => void;
   checkAchievements: () => Promise<void>;
   setError: (error: string | null) => void;
   clearError: () => void;
@@ -30,64 +28,47 @@ interface HabitStore {
 export const useHabitStore = create<HabitStore>((set, get) => ({
   // Initial state
   habits: [],
-  preferences: {
-    showOnboarding: true,
-    celebrationLevel: 'normal',
-    insights: true,
-    installDate: new Date(),
-  } as UserPreferencesV2,
-  onboarding: {
-    currentStep: 'welcome',
-    userName: '',
-    selectedHabits: [],
-    isComplete: false,
-  },
   achievements: [],
   isLoading: false,
   error: null,
 
   // Actions
   loadData: async () => {
-    logger.info('Store', 'Loading data from storage');
+    logger.info('Store', 'Loading data');
     logger.time('loadData');
-    
+
     set({ isLoading: true, error: null });
     try {
-      const [habits, preferences, achievements] = await Promise.all([
-        storageService.getHabits(),
-        storageService.getPreferences(),
-        storageService.getAchievements(),
+      // Run migration first (no-op if already done)
+      await runMigration();
+
+      const [habits, achievements] = await Promise.all([
+        habitRepository.getAll(),
+        achievementRepository.getAll(),
       ]);
-      
+
       logger.info('Store', 'Data loaded successfully', {
         habitCount: habits.length,
         achievementCount: achievements.length,
-        showOnboarding: preferences.showOnboarding,
-        theme: preferences.theme
       });
-      
+
       // Check achievements after loading data
       const updatedAchievements = achievementService.checkAchievements(habits, achievements);
-      if (updatedAchievements.length !== achievements.length || 
+      if (updatedAchievements.length !== achievements.length ||
           updatedAchievements.some((a, i) => a.unlockedAt !== achievements[i]?.unlockedAt)) {
-        await storageService.saveAchievements(updatedAchievements);
+        await achievementRepository.save(updatedAchievements);
       }
-      
-      set({ 
-        habits, 
-        preferences,
+
+      set({
+        habits,
         achievements: updatedAchievements,
-        onboarding: {
-          ...get().onboarding,
-          isComplete: !preferences.showOnboarding,
-        },
-        isLoading: false 
+        isLoading: false
       });
     } catch (error) {
       logger.error('Store', 'Failed to load data', error);
-      set({ 
-        error: 'Failed to load your habits. Please refresh the page.', 
-        isLoading: false 
+      set({
+        error: 'Failed to load your habits. Please refresh the page.',
+        isLoading: false
       });
     } finally {
       logger.timeEnd('loadData');
@@ -96,7 +77,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
   addHabit: async (habit: HabitV2) => {
     try {
-      await storageService.addHabit(habit);
+      await habitRepository.create(habit);
       const habits = [...get().habits, habit];
       set({ habits });
     } catch (error) {
@@ -107,8 +88,8 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
   updateHabit: async (updatedHabit: HabitV2) => {
     try {
-      await storageService.updateHabit(updatedHabit);
-      const habits = get().habits.map(h => 
+      await habitRepository.update(updatedHabit);
+      const habits = get().habits.map(h =>
         h.id === updatedHabit.id ? updatedHabit : h
       );
       set({ habits });
@@ -120,7 +101,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
   deleteHabit: async (habitId: string) => {
     try {
-      await storageService.deleteHabit(habitId);
+      await habitRepository.delete(habitId);
       const habits = get().habits.filter(h => h.id !== habitId);
       set({ habits });
     } catch (error) {
@@ -133,14 +114,14 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     try {
       const habits = get().habits;
       const habitIndex = habits.findIndex(h => h.id === habitId);
-      
+
       if (habitIndex === -1) return;
 
       const habit = habits[habitIndex];
       const updatedHabit = habitService.completeHabit(habit, date, value);
-      
-      await storageService.updateHabit(updatedHabit);
-      
+
+      await habitRepository.update(updatedHabit);
+
       const newHabits = [...habits];
       newHabits[habitIndex] = updatedHabit;
       set({ habits: newHabits });
@@ -150,33 +131,14 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  updatePreferences: async (newPreferences: Partial<UserPreferencesV2>) => {
-    try {
-      const currentPreferences = get().preferences;
-      const updatedPreferences = { ...currentPreferences, ...newPreferences };
-      
-      await storageService.savePreferences(updatedPreferences);
-      set({ preferences: updatedPreferences });
-    } catch (error) {
-      console.error('Failed to update preferences:', error);
-      set({ error: 'Failed to save preferences. Please try again.' });
-    }
-  },
-
-  updateOnboarding: (newOnboarding: Partial<OnboardingState>) => {
-    set(state => ({
-      onboarding: { ...state.onboarding, ...newOnboarding }
-    }));
-  },
-
   checkAchievements: async () => {
     try {
       const { habits, achievements } = get();
       const updatedAchievements = achievementService.checkAchievements(habits, achievements);
-      
+
       if (updatedAchievements.some((a, i) => a.unlockedAt !== achievements[i]?.unlockedAt)) {
         logger.info('Store', 'Achievements updated');
-        await storageService.saveAchievements(updatedAchievements);
+        await achievementRepository.save(updatedAchievements);
         set({ achievements: updatedAchievements });
       }
     } catch (error) {
