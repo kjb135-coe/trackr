@@ -110,6 +110,7 @@ export const MonthlyCalendarPage: React.FC = () => {
       <div className="flex items-center justify-center gap-3 mb-4">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          aria-label="Previous month"
           className={`${theme.btnTertiary} p-2`}
         >
           <ChevronLeft className="w-4 h-4" />
@@ -121,6 +122,7 @@ export const MonthlyCalendarPage: React.FC = () => {
         
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          aria-label="Next month"
           className={`${theme.btnTertiary} p-2`}
         >
           <ChevronRight className="w-4 h-4" />

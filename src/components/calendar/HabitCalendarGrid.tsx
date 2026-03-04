@@ -274,6 +274,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
           <div className="flex items-center justify-center py-3">
             <button
               onClick={() => handleWeekNavigation('prev')}
+              aria-label="Previous week"
               className={`p-2 ${theme.btnTertiary} rounded-lg mr-4`}
             >
               ←
@@ -283,6 +284,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
             </span>
             <button
               onClick={() => handleWeekNavigation('next')}
+              aria-label="Next week"
               className={`p-2 ${theme.btnTertiary} rounded-lg ml-4`}
             >
               →
@@ -362,6 +364,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                         <div className="relative flex-shrink-0 ml-2">
                           <button
                             onClick={() => setHabitMenuOpen(habitMenuOpen === habit.id ? null : habit.id)}
+                            aria-label={`Options for ${habit.name}`}
                             className={`opacity-0 group-hover:opacity-100 p-1.5 ${theme.hoverBg} rounded-lg transition-all duration-200 hover:scale-105`}
                           >
                             <MoreHorizontal className={`w-4 h-4 ${theme.textMuted}`} />

@@ -112,6 +112,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
               </h2>
               <button
                 onClick={onClose}
+                aria-label="Close dialog"
                 className={`p-1 rounded-lg ${theme.isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
               >
                 <X className="w-5 h-5" />

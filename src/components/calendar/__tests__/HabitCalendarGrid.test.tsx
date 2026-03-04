@@ -68,8 +68,8 @@ describe('HabitCalendarGrid', () => {
       );
 
       // Check for navigation buttons
-      expect(screen.getByRole('button', { name: /←/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /→/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /previous week/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /next week/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Today/ })).toBeInTheDocument();
     });
 
