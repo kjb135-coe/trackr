@@ -7,6 +7,7 @@ interface PreferencesStore {
   preferences: UserPreferencesV2;
   onboarding: OnboardingState;
   isLoaded: boolean;
+  error: string | null;
 
   loadPreferences: () => Promise<void>;
   updatePreferences: (preferences: Partial<UserPreferencesV2>) => Promise<void>;
@@ -27,6 +28,7 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
     isComplete: false,
   },
   isLoaded: false,
+  error: null,
 
   loadPreferences: async () => {
     try {
@@ -45,7 +47,7 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
       });
     } catch (error) {
       logger.error('PreferencesStore', 'Failed to load preferences', error);
-      set({ isLoaded: true });
+      set({ isLoaded: true, error: 'Failed to load preferences.' });
     }
   },
 
@@ -54,9 +56,10 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
       const currentPreferences = get().preferences;
       const updatedPreferences = { ...currentPreferences, ...newPreferences };
       await preferencesRepository.save(updatedPreferences);
-      set({ preferences: updatedPreferences });
+      set({ preferences: updatedPreferences, error: null });
     } catch (error) {
       logger.error('PreferencesStore', 'Failed to update preferences', error);
+      set({ error: 'Failed to update preferences. Please try again.' });
     }
   },
 
