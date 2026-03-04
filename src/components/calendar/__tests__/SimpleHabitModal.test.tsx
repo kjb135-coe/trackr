@@ -102,6 +102,15 @@ describe('SimpleHabitModal', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
+  it('closes when Escape key is pressed', async () => {
+    const user = userEvent.setup();
+    renderWithTheme(
+      <SimpleHabitModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} />
+    );
+    await user.keyboard('{Escape}');
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
   it('does not submit when name is only whitespace', async () => {
     const user = userEvent.setup();
     renderWithTheme(

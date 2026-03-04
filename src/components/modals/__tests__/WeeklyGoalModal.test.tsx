@@ -125,6 +125,17 @@ describe('WeeklyGoalModal', () => {
     });
   });
 
+  describe('Keyboard', () => {
+    it('closes when Escape key is pressed', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <WeeklyGoalModal isOpen={true} onClose={mockOnClose} currentGoal={85} onSave={mockOnSave} />
+      );
+      await user.keyboard('{Escape}');
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('Accessibility', () => {
     it('has proper slider attributes', () => {
       renderWithTheme(
