@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { HABIT_TEMPLATES, habitService } from '../../services/habitService';
@@ -37,6 +37,15 @@ export const SimpleHabitModal: React.FC<SimpleHabitModalProps> = ({
     setSelectedTemplate(null);
     onClose();
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   const popularHabits = HABIT_TEMPLATES.filter(t => t.isPopular).slice(0, 6);
 

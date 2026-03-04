@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { NutritionPage } from '../NutritionPage';
@@ -134,5 +134,20 @@ describe('NutritionPage', () => {
     expect(screen.getByText("Today's Totals")).toBeInTheDocument();
     expect(screen.getByText('Calories')).toBeInTheDocument();
     expect(screen.getByText('Protein')).toBeInTheDocument();
+  });
+
+  it('closes modal when Escape is pressed', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<NutritionPage />);
+
+    await user.click(screen.getByText('Log Meal'));
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: 'Log Meal' })).toBeInTheDocument();
+    });
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { level: 2, name: 'Log Meal' })).not.toBeInTheDocument();
+    });
   });
 });

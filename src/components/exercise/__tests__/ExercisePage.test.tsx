@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { ExercisePage } from '../ExercisePage';
@@ -121,5 +121,20 @@ describe('ExercisePage', () => {
     renderWithProviders(<ExercisePage />);
     expect(screen.getByText('Total Time')).toBeInTheDocument();
     expect(screen.getByText('Sessions')).toBeInTheDocument();
+  });
+
+  it('closes modal when Escape is pressed', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ExercisePage />);
+
+    await user.click(screen.getByText('Log Exercise'));
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: 'Log Exercise' })).toBeInTheDocument();
+    });
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { level: 2, name: 'Log Exercise' })).not.toBeInTheDocument();
+    });
   });
 });

@@ -170,4 +170,22 @@ describe('SleepPage', () => {
       expect(screen.getByRole('heading', { level: 2, name: 'Log Sleep' })).toBeInTheDocument();
     });
   });
+
+  it('closes modal when Escape is pressed', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<SleepPage />);
+
+    const logButtons = screen.getAllByText('Log Sleep');
+    await user.click(logButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: 'Log Sleep' })).toBeInTheDocument();
+    });
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { level: 2, name: 'Log Sleep' })).not.toBeInTheDocument();
+    });
+  });
 });

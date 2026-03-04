@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { JournalPage } from '../JournalPage';
@@ -134,5 +134,20 @@ describe('JournalPage', () => {
   it('shows search input when entries exist', () => {
     renderWithProviders(<JournalPage />);
     expect(screen.getByPlaceholderText('Search entries...')).toBeInTheDocument();
+  });
+
+  it('closes modal when Escape is pressed', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<JournalPage />);
+
+    await user.click(screen.getByText('New Entry'));
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: 'New Journal Entry' })).toBeInTheDocument();
+    });
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { level: 2, name: 'New Journal Entry' })).not.toBeInTheDocument();
+    });
   });
 });
