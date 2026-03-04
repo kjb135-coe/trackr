@@ -81,7 +81,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       const habits = [...get().habits, habit];
       set({ habits });
     } catch (error) {
-      console.error('Failed to add habit:', error);
+      logger.error('Store', 'Failed to add habit', error);
       set({ error: 'Failed to add habit. Please try again.' });
     }
   },
@@ -94,7 +94,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       );
       set({ habits });
     } catch (error) {
-      console.error('Failed to update habit:', error);
+      logger.error('Store', 'Failed to update habit', error);
       set({ error: 'Failed to update habit. Please try again.' });
     }
   },
@@ -105,7 +105,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       const habits = get().habits.filter(h => h.id !== habitId);
       set({ habits });
     } catch (error) {
-      console.error('Failed to delete habit:', error);
+      logger.error('Store', 'Failed to delete habit', error);
       set({ error: 'Failed to delete habit. Please try again.' });
     }
   },
@@ -126,7 +126,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       newHabits[habitIndex] = updatedHabit;
       set({ habits: newHabits });
     } catch (error) {
-      console.error('Failed to complete habit:', error);
+      logger.error('Store', 'Failed to complete habit', error);
       set({ error: 'Failed to update habit. Please try again.' });
     }
   },

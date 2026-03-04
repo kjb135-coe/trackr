@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useHabitStore } from '../../stores/habitStore';
 import { usePreferencesStore } from '../../stores/preferencesStore';
 import { HabitCalendarGrid } from '../calendar/HabitCalendarGrid';
+import { HabitV2 } from '../../types';
 
 export const HabitsPage: React.FC = () => {
   const {
@@ -20,7 +21,7 @@ export const HabitsPage: React.FC = () => {
     await checkAchievements();
   };
 
-  const handleEditHabit = async (habit: any) => {
+  const handleEditHabit = async (habit: HabitV2) => {
     await updateHabit(habit);
   };
 

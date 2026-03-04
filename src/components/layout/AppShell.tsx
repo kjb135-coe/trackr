@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Outlet } from 'react-router-dom';
 import { Navigation } from './Navigation';
+import { ErrorBoundary } from './ErrorBoundary';
 import { SimpleHabitModal } from '../calendar/SimpleHabitModal';
 import { OnboardingFlow } from '../onboarding/OnboardingFlow';
 import { useHabitStore } from '../../stores/habitStore';
 import { usePreferencesStore } from '../../stores/preferencesStore';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { HabitV2 } from '../../types';
 
 export const AppShell: React.FC = () => {
   const {
@@ -28,7 +30,7 @@ export const AppShell: React.FC = () => {
     loadPreferences();
   }, [loadData, loadPreferences]);
 
-  const handleSaveHabit = async (habit: any) => {
+  const handleSaveHabit = async (habit: HabitV2) => {
     await addHabit(habit);
     await checkAchievements();
   };
@@ -68,7 +70,9 @@ export const AppShell: React.FC = () => {
 
       {/* Main content — pushed below nav bar */}
       <main className="pt-14">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       {/* Modals */}
