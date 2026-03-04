@@ -67,6 +67,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
               </div>
               <button
                 onClick={handleCancel}
+                aria-label="Close dialog"
                 className={`p-2 ${theme.hoverBg} rounded-lg transition-colors`}
               >
                 <X className={`w-5 h-5 ${theme.textMuted}`} />

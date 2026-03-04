@@ -66,6 +66,7 @@ export const SimpleHabitModal: React.FC<SimpleHabitModalProps> = ({
                 </h2>
                 <button
                   onClick={handleClose}
+                  aria-label="Close dialog"
                   className={`p-2 ${theme.hoverBg} rounded-xl transition-all duration-200 hover:scale-105`}
                 >
                   <X className={`w-5 h-5 ${theme.textMuted}`} />

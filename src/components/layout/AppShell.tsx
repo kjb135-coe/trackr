@@ -101,6 +101,7 @@ export const AppShell: React.FC = () => {
             <span className="text-sm font-medium pr-2">{error}</span>
             <button
               onClick={clearError}
+              aria-label="Dismiss error"
               className="text-white/80 hover:text-white font-bold text-xl transition-colors hover:scale-110 transform"
             >
               x

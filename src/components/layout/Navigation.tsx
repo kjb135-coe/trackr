@@ -107,6 +107,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onAddHabit }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSettingsOpen(!settingsOpen)}
+                  aria-label="Open settings"
                   className={`p-2 rounded-lg transition-colors ${
                     theme.isDark
                       ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
