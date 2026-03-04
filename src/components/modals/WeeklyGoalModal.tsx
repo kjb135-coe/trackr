@@ -107,7 +107,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
                   max="100"
                   step="5"
                   value={goal}
-                  onChange={(e) => setGoal(parseInt(e.target.value))}
+                  onChange={(e) => setGoal(parseInt(e.target.value, 10))}
                   className={`w-full h-3 rounded-lg appearance-none cursor-pointer
                     ${theme.isDark ? 'bg-gray-700' : 'bg-gray-200'}
                     [&::-webkit-slider-thumb]:appearance-none
@@ -132,6 +132,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
                     <button
                       key={preset}
                       onClick={() => setGoal(preset)}
+                      aria-pressed={goal === preset}
                       className={`px-3 py-1 text-xs rounded-md transition-colors ${
                         goal === preset
                           ? 'bg-blue-500 text-white'

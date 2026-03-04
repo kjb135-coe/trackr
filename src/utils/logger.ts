@@ -21,7 +21,6 @@ class Logger {
   constructor() {
     // Enable debug mode in development (based on React's NODE_ENV)
     try {
-      // @ts-ignore
       if (process?.env?.NODE_ENV === 'development') {
         this.logLevel = LogLevel.DEBUG;
       }
