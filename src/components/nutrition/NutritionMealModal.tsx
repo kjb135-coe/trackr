@@ -190,6 +190,8 @@ export const NutritionMealModal: React.FC<NutritionMealModalProps> = ({
                     <button
                       key={mt.value}
                       onClick={() => setMealType(mt.value)}
+                      aria-label={`Meal type: ${mt.label}`}
+                      aria-pressed={mealType === mt.value}
                       className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors ${
                         mealType === mt.value
                           ? 'bg-orange-500 text-white'
@@ -250,6 +252,7 @@ export const NutritionMealModal: React.FC<NutritionMealModalProps> = ({
                         {foodItems.length > 1 && (
                           <button
                             onClick={() => removeFoodItem(idx)}
+                            aria-label={`Remove ${fi.name || 'food item'}`}
                             className={`p-1 ${theme.isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
                           >
                             <Trash2 className="w-3.5 h-3.5 text-red-400" />

@@ -170,6 +170,7 @@ export const JournalPage: React.FC = () => {
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => handleEdit(entry)}
+                    aria-label={`Edit journal entry for ${entry.date}`}
                     className={`p-1.5 rounded-md ${
                       theme.isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                     } transition-colors`}
@@ -178,6 +179,7 @@ export const JournalPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(entry.id)}
+                    aria-label={`Delete journal entry for ${entry.date}`}
                     className={`p-1.5 rounded-md ${
                       theme.isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                     } transition-colors`}

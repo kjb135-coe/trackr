@@ -155,6 +155,7 @@ export const NutritionPage: React.FC = () => {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => handleEdit(meal)}
+                          aria-label={`Edit meal for ${meal.date}`}
                           className={`p-1.5 rounded-md ${
                             theme.isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                           } transition-colors`}
@@ -163,6 +164,7 @@ export const NutritionPage: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(meal.id)}
+                          aria-label={`Delete meal for ${meal.date}`}
                           className={`p-1.5 rounded-md ${
                             theme.isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                           } transition-colors`}

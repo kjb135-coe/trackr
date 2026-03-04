@@ -146,6 +146,8 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
                     <button
                       key={t}
                       onClick={() => setType(t)}
+                      aria-label={`Type: ${TYPE_LABELS[t] || t}`}
+                      aria-pressed={type === t}
                       className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                         type === t
                           ? 'bg-green-500 text-white'
@@ -183,6 +185,8 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
                     <button
                       key={opt.value}
                       onClick={() => setIntensity(opt.value)}
+                      aria-label={`Intensity: ${opt.label}`}
+                      aria-pressed={intensity === opt.value}
                       className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
                         intensity === opt.value
                           ? opt.value === 'low'

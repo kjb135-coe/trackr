@@ -416,6 +416,9 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
                       <td
                         key={cellKey}
                         tabIndex={0}
+                        role="checkbox"
+                        aria-checked={completed}
+                        aria-label={`${habit.name}, ${format(date, 'EEEE MMM d')}`}
                         className={`cell px-1 py-2 text-center cursor-pointer relative transition-colors duration-200 ${
                           future ? 'cursor-not-allowed opacity-40' : ''
                         } ${isToday(date) ? todayColBg : ''}`}

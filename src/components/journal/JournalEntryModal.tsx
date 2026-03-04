@@ -166,6 +166,8 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                     <button
                       key={m}
                       onClick={() => setMood(m)}
+                      aria-label={`Mood: ${MOOD_LABELS[m]}`}
+                      aria-pressed={mood === m}
                       className={`flex-1 py-2 text-lg rounded-lg transition-all ${
                         mood === m
                           ? 'ring-2 ring-blue-500 scale-110'
@@ -192,6 +194,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}
+                        aria-label={`Remove tag ${tag}`}
                         className="hover:opacity-70"
                       >
                         &times;
