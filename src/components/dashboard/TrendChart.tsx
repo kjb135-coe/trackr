@@ -14,7 +14,7 @@ const BAR_MIN_WIDTH = 4;
 const BAR_MAX_WIDTH = 24;
 const PADDING = { top: 20, right: 12, bottom: 28, left: 36 };
 
-export const TrendChart: React.FC<TrendChartProps> = ({ dailyData, rollingAverage }) => {
+export const TrendChart: React.FC<TrendChartProps> = React.memo(({ dailyData, rollingAverage }) => {
   const theme = useThemeClasses();
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
@@ -153,4 +153,6 @@ export const TrendChart: React.FC<TrendChartProps> = ({ dailyData, rollingAverag
       </div>
     </div>
   );
-};
+});
+
+TrendChart.displayName = 'TrendChart';

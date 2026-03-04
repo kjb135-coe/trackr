@@ -8,7 +8,7 @@ interface AggregateStatsProps {
   data: AggregateData;
 }
 
-export const AggregateStats: React.FC<AggregateStatsProps> = ({ data }) => {
+export const AggregateStats: React.FC<AggregateStatsProps> = React.memo(({ data }) => {
   const theme = useThemeClasses();
 
   const stats = [
@@ -57,4 +57,6 @@ export const AggregateStats: React.FC<AggregateStatsProps> = ({ data }) => {
       ))}
     </div>
   );
-};
+});
+
+AggregateStats.displayName = 'AggregateStats';
