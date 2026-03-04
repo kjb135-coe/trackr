@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { HABIT_TEMPLATES, habitService } from '../../services/habitService';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { HabitV2 } from '../../types';
 
 interface SimpleHabitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (habit: any) => void;
+  onSave: (habit: HabitV2) => void;
 }
 
 export const SimpleHabitModal: React.FC<SimpleHabitModalProps> = ({ 
