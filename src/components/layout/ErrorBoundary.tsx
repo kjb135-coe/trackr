@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '../../utils/logger';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -15,6 +16,13 @@ export class ErrorBoundary extends React.Component<
 
   static getDerivedStateFromError(): ErrorBoundaryState {
     return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    logger.error('ErrorBoundary', error.message, {
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+    });
   }
 
   render() {
