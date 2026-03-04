@@ -187,7 +187,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
         if (!bd) return;
         const x1 = Math.round(hd.getBoundingClientRect().left);
         const x2 = Math.round(bd.getBoundingClientRect().left);
-        if (Math.abs(x1 - x2) > 1) {
+        if (Math.abs(x1 - x2) > 1 && DEBUG_GRID) {
           console.warn('Grid misalignment at column', i, { headerLeft: x1, bodyLeft: x2 });
         }
       });
