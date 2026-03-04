@@ -64,6 +64,9 @@ export const SimpleHabitModal: React.FC<SimpleHabitModalProps> = ({
           />
           
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="simple-habit-modal-title"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -72,7 +75,7 @@ export const SimpleHabitModal: React.FC<SimpleHabitModalProps> = ({
           >
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
-                <h2 className={`text-2xl font-bold ${theme.textPrimary}`}>
+                <h2 id="simple-habit-modal-title" className={`text-2xl font-bold ${theme.textPrimary}`}>
                   Add New Habit
                 </h2>
                 <button

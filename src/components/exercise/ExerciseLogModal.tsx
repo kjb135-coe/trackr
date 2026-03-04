@@ -117,6 +117,9 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
             onClick={onClose}
           />
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="exercise-log-modal-title"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -125,7 +128,7 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
             } border rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto`}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
+              <h2 id="exercise-log-modal-title" className={`text-lg font-semibold ${theme.textPrimary}`}>
                 {existingEntry ? 'Edit Exercise' : 'Log Exercise'}
               </h2>
               <button
