@@ -1,11 +1,9 @@
 # TODO
 
 ## P2 — Quality
-- [ ] preferencesStore updatePreferences — logs error but doesn't set error state; inconsistent with habitStore pattern
 - [ ] ProgressRing.tsx — hardcoded text-slate-700 needs dark: prefix (currently low-impact, only used if reintroduced)
 
 ## P2 — Test Coverage
-- [ ] SimpleHabitModal — no tests; primary habit creation path
 - [ ] OnboardingFlow — expand tests to cover all 4 steps navigation, habit selection validation, name input
 
 ## P3 — Nice to Have
@@ -15,3 +13,4 @@
 - [ ] Pre-commit hook could also run tests (currently only tsc) — evaluate if test suite stays fast enough
 - [ ] Input.tsx className override doesn't merge well with base dark classes — consider using cn() for user's className too
 - [ ] Error boundary logging — ErrorBoundary in AppShell could log caught errors to a more persistent store for debugging
+- [ ] Surface preferencesStore.error in AppShell error toast — now that error state exists, display it to users
