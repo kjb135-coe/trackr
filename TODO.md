@@ -1,6 +1,17 @@
 # TODO
 
+## P1 — Important
+- [ ] Escape key handling — 5 modals (WeeklyGoalModal, SleepLogModal, JournalEntryModal, ExerciseLogModal, NutritionMealModal) can't be dismissed with Escape key; SimpleHabitModal already has it
+
+## P2 — Should Do
+- [ ] Modal focus trapping — all 6 modals allow Tab to reach background elements; implement a `useFocusTrap` hook
+- [ ] Replace `any` types — migration.ts (3), preferencesRepository.ts (1), achievementRepository.ts (1); use `unknown` or typed unions
+- [ ] WeeklyGoalModal preset buttons — missing `aria-pressed` to announce selected state
+- [ ] parseInt radix — ExerciseLogModal and NutritionMealModal use `parseInt()` without radix parameter
+- [ ] React.memo dashboard components — Sparkline, HabitBreakdown, AggregateStats, TrendChart re-render unnecessarily
+
 ## P3 — Nice to Have
 - [ ] Google Auth — authentication for cross-device sync
 - [ ] Address 34 Dependabot vulnerabilities (1 critical, 16 high)
-- [ ] Error boundary logging — ErrorBoundary in AppShell could log caught errors to a more persistent store for debugging
+- [ ] Remove dead code files — ControlPanel.tsx, ui/WeeklyGoalModal.tsx, storage.ts, features/ dir
+- [ ] Remove `@ts-ignore` in logger.ts — optional chaining already handles undefined process
