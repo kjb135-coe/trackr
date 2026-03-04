@@ -8,7 +8,7 @@ interface HabitBreakdownProps {
   habitStats: HabitStats[];
 }
 
-export const HabitBreakdown: React.FC<HabitBreakdownProps> = ({ habitStats }) => {
+export const HabitBreakdown: React.FC<HabitBreakdownProps> = React.memo(({ habitStats }) => {
   const theme = useThemeClasses();
 
   if (habitStats.length === 0) return null;
@@ -78,4 +78,6 @@ export const HabitBreakdown: React.FC<HabitBreakdownProps> = ({ habitStats }) =>
       </div>
     </div>
   );
-};
+});
+
+HabitBreakdown.displayName = 'HabitBreakdown';

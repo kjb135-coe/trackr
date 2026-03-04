@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from 'date-fns';
@@ -158,7 +158,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
   };
 
   // Calculate weekly progress
-  const calculateWeeklyProgress = () => {
+  const weeklyProgress = useMemo(() => {
     const totalPossibleCompletions = habits.length * 7;
     if (totalPossibleCompletions === 0) return { completed: 0, total: 0, percentage: 0 };
 
@@ -171,9 +171,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
       total: totalPossibleCompletions,
       percentage: Math.round((weeklyCompletions / totalPossibleCompletions) * 100)
     };
-  };
-
-  const weeklyProgress = calculateWeeklyProgress();
+  }, [habits, days]);
 
   // Debug grid alignment (dev-only)
   useEffect(() => {
