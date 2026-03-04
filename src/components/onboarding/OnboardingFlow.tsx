@@ -129,13 +129,15 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
         <div className="space-y-4 max-h-96 overflow-y-auto">
           <div className="grid grid-cols-2 gap-3">
             {HABIT_TEMPLATES.filter(t => t.isPopular).map((template, index) => (
-              <motion.div
+              <motion.button
                 key={template.id}
+                type="button"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
+                aria-pressed={selectedHabits.includes(template.id)}
                 onClick={() => {
                   if (selectedHabits.includes(template.id)) {
                     setSelectedHabits(prev => prev.filter(id => id !== template.id));
@@ -164,7 +166,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
                     </motion.div>
                   )}
                 </div>
-              </motion.div>
+              </motion.button>
             ))}
           </div>
           <motion.div 

@@ -128,6 +128,21 @@ describe('OnboardingFlow', () => {
     expect(screen.getByText('Get Started')).toBeInTheDocument();
   });
 
+  it('habit template cards are focusable buttons', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingFlow isOpen={true} />);
+
+    // Navigate to step 2
+    await user.click(screen.getByText('Continue')); // step 0 → 1
+    await user.type(screen.getByPlaceholderText('Enter your name'), 'Keegan');
+    await user.click(screen.getByText('Continue')); // step 1 → 2
+
+    // Habit template cards should be buttons (not divs)
+    const exerciseCard = screen.getByText('Exercise').closest('button');
+    expect(exerciseCard).toBeTruthy();
+    expect(exerciseCard?.getAttribute('type')).toBe('button');
+  });
+
   it('handles error during completion gracefully', async () => {
     const user = userEvent.setup();
     mockAddHabit.mockRejectedValue(new Error('IndexedDB failed'));

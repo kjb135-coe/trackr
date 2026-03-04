@@ -56,4 +56,14 @@ describe('ErrorBoundary', () => {
     );
     expect(screen.getByRole('button', { name: /reload/i })).toBeInTheDocument();
   });
+
+  it('fallback heading has dark mode classes', () => {
+    renderWithTheme(
+      <ErrorBoundary>
+        <ThrowingComponent shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    const heading = screen.getByText(/something went wrong/i);
+    expect(heading.className).toMatch(/dark:/);
+  });
 });

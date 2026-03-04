@@ -31,10 +31,10 @@ export class ErrorBoundary extends React.Component<
         <div className="min-h-[60vh] flex items-center justify-center p-8">
           <div className="text-center max-w-md">
             <p className="text-4xl mb-4">😵</p>
-            <h2 className="text-xl font-semibold text-gray-200 mb-2">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
               Something went wrong
             </h2>
-            <p className="text-gray-400 mb-6 text-sm">
+            <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
               An unexpected error occurred. Try reloading the page.
             </p>
             <button
