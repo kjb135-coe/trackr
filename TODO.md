@@ -1,8 +1,5 @@
 # TODO
 
-## P1 — Important
-- [ ] Add tsc --noEmit to CI/pre-commit hook now that it passes cleanly
-
 ## P2 — Quality
 - [ ] Add tests for layout components (AppShell, Navigation) — critical UI with zero test coverage
 - [ ] Add tests for HabitsPage and MonthlyCalendarPage
@@ -15,3 +12,4 @@
 - [ ] Replace `any` types in logger utility with `unknown`
 - [ ] ErrorBoundary could use componentDidCatch to log errors via logger utility
 - [ ] HabitCalendarGrid DEBUG_GRID could use process.env check instead of URL param for cleaner dev experience
+- [ ] Pre-commit hook could also run tests (currently only tsc) — evaluate if test suite stays fast enough
