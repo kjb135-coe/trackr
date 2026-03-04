@@ -122,6 +122,41 @@ describe('SleepPage', () => {
     expect(screen.getByText('Good Nights')).toBeInTheDocument();
   });
 
+  it('displays error banner when store has an error', () => {
+    (sleepStore.useSleepStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Failed to load sleep data',
+      loadEntries: mockLoadEntries,
+      addEntry: mockAddEntry,
+      updateEntry: mockUpdateEntry,
+      deleteEntry: mockDeleteEntry,
+      clearError: jest.fn(),
+    });
+
+    renderWithProviders(<SleepPage />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load sleep data');
+  });
+
+  it('calls clearError when dismiss button is clicked', async () => {
+    const mockClearError = jest.fn();
+    (sleepStore.useSleepStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Something went wrong',
+      loadEntries: mockLoadEntries,
+      addEntry: mockAddEntry,
+      updateEntry: mockUpdateEntry,
+      deleteEntry: mockDeleteEntry,
+      clearError: mockClearError,
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<SleepPage />);
+    await user.click(screen.getByLabelText('Dismiss error'));
+    expect(mockClearError).toHaveBeenCalled();
+  });
+
   it('opens modal when Log Sleep is clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<SleepPage />);

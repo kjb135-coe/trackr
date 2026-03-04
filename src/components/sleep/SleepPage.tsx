@@ -12,7 +12,7 @@ import { SleepStats } from './SleepStats';
 const QUALITY_LABELS = ['', 'Terrible', 'Poor', 'Fair', 'Good', 'Excellent'];
 
 export const SleepPage: React.FC = () => {
-  const { entries, isLoading, loadEntries, addEntry, updateEntry, deleteEntry } = useSleepStore();
+  const { entries, isLoading, error, clearError, loadEntries, addEntry, updateEntry, deleteEntry } = useSleepStore();
   const theme = useThemeClasses();
   const [showModal, setShowModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<SleepEntry | undefined>();
@@ -82,6 +82,16 @@ export const SleepPage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto px-4 py-6 space-y-6"
     >
+      {/* Error Banner */}
+      {error && (
+        <div role="alert" className={`flex items-center justify-between p-3 rounded-lg text-sm font-medium ${
+          theme.isDark ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          <span>{error}</span>
+          <button onClick={clearError} aria-label="Dismiss error" className="ml-2 font-bold hover:opacity-70">&times;</button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

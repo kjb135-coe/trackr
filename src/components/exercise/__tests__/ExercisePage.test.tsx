@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { ExercisePage } from '../ExercisePage';
 import * as exerciseStore from '../../../stores/exerciseStore';
@@ -79,6 +80,41 @@ describe('ExercisePage', () => {
 
     renderWithProviders(<ExercisePage />);
     expect(screen.getByText('No exercise data yet')).toBeInTheDocument();
+  });
+
+  it('displays error banner when store has an error', () => {
+    (exerciseStore.useExerciseStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Failed to load exercise data',
+      loadEntries: mockLoadEntries,
+      addEntry: jest.fn(),
+      updateEntry: jest.fn(),
+      deleteEntry: jest.fn(),
+      clearError: jest.fn(),
+    });
+
+    renderWithProviders(<ExercisePage />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load exercise data');
+  });
+
+  it('calls clearError when dismiss button is clicked', async () => {
+    const mockClearError = jest.fn();
+    (exerciseStore.useExerciseStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Something went wrong',
+      loadEntries: mockLoadEntries,
+      addEntry: jest.fn(),
+      updateEntry: jest.fn(),
+      deleteEntry: jest.fn(),
+      clearError: mockClearError,
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<ExercisePage />);
+    await user.click(screen.getByLabelText('Dismiss error'));
+    expect(mockClearError).toHaveBeenCalled();
   });
 
   it('shows stats when entries exist', () => {
