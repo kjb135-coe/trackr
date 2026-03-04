@@ -4,6 +4,7 @@ import { X, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
 import { SleepEntry, SLEEP_FACTORS } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { v4 as uuidv4 } from 'uuid';
 
 interface SleepLogModalProps {
@@ -35,6 +36,7 @@ export const SleepLogModal: React.FC<SleepLogModalProps> = ({
   defaultDate,
 }) => {
   const theme = useThemeClasses();
+  const focusTrapRef = useFocusTrap(isOpen);
   const today = defaultDate || format(new Date(), 'yyyy-MM-dd');
 
   const [bedtime, setBedtime] = useState('22:30');
@@ -131,7 +133,7 @@ export const SleepLogModal: React.FC<SleepLogModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div ref={focusTrapRef} className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

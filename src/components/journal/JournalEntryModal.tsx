@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { format } from 'date-fns';
 import { JournalEntry } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { v4 as uuidv4 } from 'uuid';
 
 interface JournalEntryModalProps {
@@ -23,6 +24,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
   existingEntry,
 }) => {
   const theme = useThemeClasses();
+  const focusTrapRef = useFocusTrap(isOpen);
   const today = format(new Date(), 'yyyy-MM-dd');
 
   const [date, setDate] = useState(today);
@@ -99,7 +101,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div ref={focusTrapRef} className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

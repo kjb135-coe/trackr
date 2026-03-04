@@ -4,6 +4,7 @@ import { X, Plus, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { NutritionMeal, NutritionFoodItem } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { v4 as uuidv4 } from 'uuid';
 
 interface NutritionMealModalProps {
@@ -47,6 +48,7 @@ export const NutritionMealModal: React.FC<NutritionMealModalProps> = ({
   existingMeal,
 }) => {
   const theme = useThemeClasses();
+  const focusTrapRef = useFocusTrap(isOpen);
   const today = format(new Date(), 'yyyy-MM-dd');
 
   const [date, setDate] = useState(today);
@@ -150,7 +152,7 @@ export const NutritionMealModal: React.FC<NutritionMealModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div ref={focusTrapRef} className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
