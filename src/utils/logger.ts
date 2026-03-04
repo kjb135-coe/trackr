@@ -10,7 +10,7 @@ interface LogEntry {
   level: LogLevel;
   category: string;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 class Logger {
@@ -30,7 +30,7 @@ class Logger {
     }
   }
 
-  private log(level: LogLevel, category: string, message: string, data?: any) {
+  private log(level: LogLevel, category: string, message: string, data?: unknown) {
     if (level < this.logLevel) return;
 
     const entry: LogEntry = {
@@ -60,19 +60,19 @@ class Logger {
     );
   }
 
-  debug(category: string, message: string, data?: any) {
+  debug(category: string, message: string, data?: unknown) {
     this.log(LogLevel.DEBUG, category, message, data);
   }
 
-  info(category: string, message: string, data?: any) {
+  info(category: string, message: string, data?: unknown) {
     this.log(LogLevel.INFO, category, message, data);
   }
 
-  warn(category: string, message: string, data?: any) {
+  warn(category: string, message: string, data?: unknown) {
     this.log(LogLevel.WARN, category, message, data);
   }
 
-  error(category: string, message: string, data?: any) {
+  error(category: string, message: string, data?: unknown) {
     this.log(LogLevel.ERROR, category, message, data);
   }
 
