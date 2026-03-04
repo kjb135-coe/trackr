@@ -77,6 +77,9 @@ export const DashboardPage: React.FC = () => {
           <p className={`${theme.textSecondary} text-base max-w-md mx-auto`}>
             Add some habits and start tracking to see your analytics here.
           </p>
+          <p className={`${theme.textMuted} text-sm max-w-md mx-auto mt-2`}>
+            Add journal entries with mood ratings to unlock mood insights.
+          </p>
         </div>
       </motion.div>
     );

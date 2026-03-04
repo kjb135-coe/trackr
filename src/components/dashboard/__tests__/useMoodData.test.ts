@@ -59,9 +59,9 @@ describe('computeMoodData', () => {
       makeEntry(0, 4), // today
       makeEntry(2, 3), // 2 days ago
     ];
-    const result = computeMoodData(entries, 5, []);
-    // Period is 5 days: [4 days ago, 3 days ago, 2 days ago, 1 day ago, today]
-    expect(result.moodTrend).toEqual([0, 0, 3, 0, 4]);
+    const result = computeMoodData(entries, 7, []);
+    // Period is 7 days: [6 days ago, 5 days ago, 4 days ago, 3 days ago, 2 days ago, 1 day ago, today]
+    expect(result.moodTrend).toEqual([0, 0, 0, 0, 3, 0, 4]);
     expect(result.moodDates).toHaveLength(2);
   });
 

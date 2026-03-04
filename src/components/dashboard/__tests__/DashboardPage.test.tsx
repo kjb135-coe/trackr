@@ -107,6 +107,7 @@ describe('DashboardPage', () => {
     renderWithProviders(<DashboardPage />);
     expect(screen.getByText('No data yet')).toBeInTheDocument();
     expect(screen.getByText(/Add some habits/)).toBeInTheDocument();
+    expect(screen.getByText(/journal entries/i)).toBeInTheDocument();
   });
 
   it('shows weakest habits when 3+ habits exist', () => {
