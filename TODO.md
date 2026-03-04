@@ -1,7 +1,6 @@
 # TODO
 
 ## P2 — Quality
-- [ ] Add tests for HabitsPage and MonthlyCalendarPage — still zero coverage
 - [ ] Add ARIA labels to interactive elements — only 3 aria-labels in entire codebase (all in AppShell footer)
 - [ ] OnboardingFlow uses Input/Card/Button from ui/ barrel — these generic ui components lack dark mode theming (they hardcode light colors like `text-slate-900`, `bg-white`)
 
