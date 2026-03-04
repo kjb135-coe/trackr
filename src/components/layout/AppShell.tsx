@@ -20,7 +20,7 @@ export const AppShell: React.FC = () => {
     clearError,
   } = useHabitStore();
 
-  const { preferences, loadPreferences } = usePreferencesStore();
+  const { preferences, loadPreferences, error: preferencesError } = usePreferencesStore();
 
   const theme = useThemeClasses();
   const [showHabitModal, setShowHabitModal] = useState(false);
@@ -85,7 +85,7 @@ export const AppShell: React.FC = () => {
       <OnboardingFlow isOpen={preferences.showOnboarding && !isLoading} />
 
       {/* Error Toast */}
-      {error && (
+      {(error || preferencesError) && (
         <motion.div
           initial={{ opacity: 0, y: 100, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -98,7 +98,7 @@ export const AppShell: React.FC = () => {
           } text-white px-6 py-4 rounded-xl shadow-2xl max-w-sm z-50 border backdrop-blur-md`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium pr-2">{error}</span>
+            <span className="text-sm font-medium pr-2">{error || preferencesError}</span>
             <button
               onClick={clearError}
               aria-label="Dismiss error"

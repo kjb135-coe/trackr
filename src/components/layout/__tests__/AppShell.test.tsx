@@ -46,6 +46,7 @@ describe('AppShell', () => {
         insights: true,
       },
       loadPreferences: mockLoadPreferences,
+      error: null,
     });
   });
 
@@ -116,5 +117,21 @@ describe('AppShell', () => {
     renderWithProviders(<AppShell />);
     expect(mockLoadData).toHaveBeenCalled();
     expect(mockLoadPreferences).toHaveBeenCalled();
+  });
+
+  it('shows error toast when preferencesStore has an error', () => {
+    (preferencesStore.usePreferencesStore as unknown as jest.Mock).mockReturnValue({
+      preferences: {
+        theme: 'dark',
+        showOnboarding: false,
+        celebrationLevel: 'normal',
+        insights: true,
+      },
+      loadPreferences: mockLoadPreferences,
+      error: 'Failed to update preferences. Please try again.',
+    });
+
+    renderWithProviders(<AppShell />);
+    expect(screen.getByText('Failed to update preferences. Please try again.')).toBeInTheDocument();
   });
 });

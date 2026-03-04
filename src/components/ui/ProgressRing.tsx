@@ -60,7 +60,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
       {(showText || children) && (
         <div className="absolute inset-0 flex items-center justify-center">
           {children || (
-            <span className="text-2xl font-bold text-slate-700">
+            <span className="text-2xl font-bold text-slate-700 dark:text-slate-200">
               {Math.round(progress)}%
             </span>
           )}

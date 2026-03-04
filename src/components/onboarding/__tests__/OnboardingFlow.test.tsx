@@ -51,6 +51,83 @@ describe('OnboardingFlow', () => {
     expect(welcomeText.className).toMatch(/dark:/);
   });
 
+  it('navigates from step 0 to step 1 on Continue', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingFlow isOpen={true} />);
+
+    expect(screen.getByText('Welcome to Trackr 2.0! ✨')).toBeInTheDocument();
+    await user.click(screen.getByText('Continue'));
+    expect(screen.getByText('What should we call you?')).toBeInTheDocument();
+  });
+
+  it('Back button is disabled on step 0', () => {
+    renderWithProviders(<OnboardingFlow isOpen={true} />);
+    const backBtn = screen.getByText('Back');
+    expect(backBtn).toBeDisabled();
+  });
+
+  it('Continue is disabled on step 1 when name is empty', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingFlow isOpen={true} />);
+    await user.click(screen.getByText('Continue')); // go to step 1
+
+    const continueBtn = screen.getByText('Continue').closest('button')!;
+    expect(continueBtn).toBeDisabled();
+  });
+
+  it('Continue is enabled on step 1 when name is entered', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingFlow isOpen={true} />);
+    await user.click(screen.getByText('Continue')); // go to step 1
+
+    await user.type(screen.getByPlaceholderText('Enter your name'), 'Keegan');
+    const continueBtn = screen.getByText('Continue').closest('button')!;
+    expect(continueBtn).not.toBeDisabled();
+  });
+
+  it('step 2 requires at least 3 habits selected', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingFlow isOpen={true} />);
+
+    // Step 0 → 1
+    await user.click(screen.getByText('Continue'));
+    // Step 1: enter name
+    await user.type(screen.getByPlaceholderText('Enter your name'), 'Keegan');
+    await user.click(screen.getByText('Continue'));
+
+    // Step 2: continue should be disabled with 0 habits
+    const getContinueBtn = () => screen.getByText('Continue').closest('button')!;
+    expect(getContinueBtn()).toBeDisabled();
+
+    // Select 2 habits — still disabled
+    const habitCards = screen.getAllByText(/Exercise|Read|Meditate|Drink Water|Sleep Early|Code|Journal|Walk|Stretch|Learn/);
+    await user.click(habitCards[0]);
+    await user.click(habitCards[1]);
+    expect(getContinueBtn()).toBeDisabled();
+
+    // Select 3rd — now enabled
+    await user.click(habitCards[2]);
+    expect(getContinueBtn()).not.toBeDisabled();
+  });
+
+  it('shows Get Started on final step', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingFlow isOpen={true} />);
+
+    // Navigate to step 3
+    await user.click(screen.getByText('Continue')); // step 0 → 1
+    await user.type(screen.getByPlaceholderText('Enter your name'), 'Keegan');
+    await user.click(screen.getByText('Continue')); // step 1 → 2
+
+    const habitCards = screen.getAllByText(/Exercise|Read|Meditate|Drink Water|Sleep Early|Code|Journal|Walk|Stretch|Learn/);
+    await user.click(habitCards[0]);
+    await user.click(habitCards[1]);
+    await user.click(habitCards[2]);
+    await user.click(screen.getByText('Continue')); // step 2 → 3
+
+    expect(screen.getByText('Get Started')).toBeInTheDocument();
+  });
+
   it('handles error during completion gracefully', async () => {
     const user = userEvent.setup();
     mockAddHabit.mockRejectedValue(new Error('IndexedDB failed'));
