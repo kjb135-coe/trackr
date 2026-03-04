@@ -82,7 +82,7 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
       type,
       durationMinutes,
       intensity,
-      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned) : undefined,
+      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : undefined,
       distance: distance ? parseFloat(distance) : undefined,
       distanceUnit: distance ? distanceUnit : undefined,
       notes: notes.trim() || undefined,
@@ -181,7 +181,7 @@ export const ExerciseLogModal: React.FC<ExerciseLogModalProps> = ({
                   min={1}
                   max={600}
                   value={durationMinutes}
-                  onChange={e => setDurationMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={e => setDurationMinutes(Math.max(1, parseInt(e.target.value, 10) || 1))}
                   className={`${theme.input} w-full text-sm`}
                 />
               </div>

@@ -22,7 +22,7 @@ class AchievementRepository {
     }
   }
 
-  private async write(key: string, value: any): Promise<void> {
+  private async write(key: string, value: unknown): Promise<void> {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
         await chrome.storage.sync.set({ [key]: value });

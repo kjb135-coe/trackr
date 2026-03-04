@@ -4,6 +4,33 @@ import { logger } from '../utils/logger';
 
 const CURRENT_MIGRATION_VERSION = 1;
 
+/** Shape of old HabitV2 data stored in chrome.storage / localStorage */
+interface OldHabitRaw {
+  id: string;
+  name: string;
+  emoji: string;
+  category: string;
+  streak?: number;
+  bestStreak?: number;
+  createdAt: string | Date;
+  settings?: {
+    target?: number;
+    unit?: string;
+    difficulty?: 'easy' | 'medium' | 'hard';
+    reminders?: boolean;
+  };
+  analytics?: {
+    totalCompletions?: number;
+    averagePerWeek?: number;
+    bestWeek?: string | Date | null;
+  };
+  completions?: Record<string, {
+    completed?: boolean;
+    value?: number;
+    completedAt?: string | Date;
+  }>;
+}
+
 // Keys from the old StorageService
 const OLD_STORAGE_KEYS = {
   HABITS: 'trackr_v2_habits',
@@ -14,7 +41,7 @@ const OLD_STORAGE_KEYS = {
  * Read raw habits data from the old chrome.storage/localStorage.
  * Returns the unparsed array (dates are still strings).
  */
-async function readOldHabits(): Promise<any[]> {
+async function readOldHabits(): Promise<OldHabitRaw[]> {
   try {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       const result = await chrome.storage.sync.get(OLD_STORAGE_KEYS.HABITS);
@@ -30,7 +57,7 @@ async function readOldHabits(): Promise<any[]> {
 /**
  * Migrate a single old HabitV2 record into normalized form.
  */
-function normalizeHabit(raw: any): {
+function normalizeHabit(raw: OldHabitRaw): {
   record: HabitRecord;
   completions: HabitCompletionRecord[];
 } {
@@ -59,7 +86,7 @@ function normalizeHabit(raw: any): {
 
   const completions: HabitCompletionRecord[] = [];
   if (raw.completions && typeof raw.completions === 'object') {
-    for (const [date, data] of Object.entries<any>(raw.completions)) {
+    for (const [date, data] of Object.entries(raw.completions)) {
       completions.push({
         habitId: raw.id,
         date,
