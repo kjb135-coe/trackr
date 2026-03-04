@@ -111,6 +111,15 @@ describe('SimpleHabitModal', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
+  it('has role="dialog" and aria-modal', () => {
+    renderWithTheme(
+      <SimpleHabitModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} />
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveAttribute('aria-labelledby');
+  });
+
   it('does not submit when name is only whitespace', async () => {
     const user = userEvent.setup();
     renderWithTheme(

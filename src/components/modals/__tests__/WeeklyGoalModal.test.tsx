@@ -137,6 +137,20 @@ describe('WeeklyGoalModal', () => {
   });
 
   describe('Accessibility', () => {
+    it('has role="dialog" and aria-modal', () => {
+      renderWithTheme(
+        <WeeklyGoalModal
+          isOpen={true}
+          onClose={mockOnClose}
+          currentGoal={85}
+          onSave={mockOnSave}
+        />
+      );
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      expect(dialog).toHaveAttribute('aria-labelledby');
+    });
+
     it('has proper slider attributes', () => {
       renderWithTheme(
         <WeeklyGoalModal

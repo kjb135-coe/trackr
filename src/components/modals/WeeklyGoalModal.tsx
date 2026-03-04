@@ -60,6 +60,9 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
 
           {/* Modal */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="weekly-goal-modal-title"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -72,7 +75,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
                 <div className={`p-2 ${theme.isDark ? 'bg-blue-500/20' : 'bg-blue-100'} rounded-lg`}>
                   <Target className={`w-5 h-5 ${theme.isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
-                <h2 className={`text-xl font-semibold ${theme.textPrimary}`}>
+                <h2 id="weekly-goal-modal-title" className={`text-xl font-semibold ${theme.textPrimary}`}>
                   Set Weekly Goal
                 </h2>
               </div>

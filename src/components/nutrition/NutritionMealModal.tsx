@@ -161,6 +161,9 @@ export const NutritionMealModal: React.FC<NutritionMealModalProps> = ({
             onClick={onClose}
           />
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="nutrition-meal-modal-title"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -169,7 +172,7 @@ export const NutritionMealModal: React.FC<NutritionMealModalProps> = ({
             } border rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto`}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
+              <h2 id="nutrition-meal-modal-title" className={`text-lg font-semibold ${theme.textPrimary}`}>
                 {existingMeal ? 'Edit Meal' : 'Log Meal'}
               </h2>
               <button

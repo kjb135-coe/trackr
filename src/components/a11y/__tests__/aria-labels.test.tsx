@@ -21,6 +21,44 @@ jest.mock('../../../stores/preferencesStore', () => ({
 const renderWithTheme = (ui: React.ReactElement) =>
   render(<ThemeProvider>{ui}</ThemeProvider>);
 
+describe('Modal ARIA dialog roles', () => {
+  it('SleepLogModal has role="dialog" and aria-modal', () => {
+    renderWithTheme(
+      <SleepLogModal isOpen={true} onClose={jest.fn()} onSave={jest.fn()} />
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveAttribute('aria-labelledby');
+  });
+
+  it('ExerciseLogModal has role="dialog" and aria-modal', () => {
+    renderWithTheme(
+      <ExerciseLogModal isOpen={true} onClose={jest.fn()} onSave={jest.fn()} />
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveAttribute('aria-labelledby');
+  });
+
+  it('JournalEntryModal has role="dialog" and aria-modal', () => {
+    renderWithTheme(
+      <JournalEntryModal isOpen={true} onClose={jest.fn()} onSave={jest.fn()} />
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveAttribute('aria-labelledby');
+  });
+
+  it('NutritionMealModal has role="dialog" and aria-modal', () => {
+    renderWithTheme(
+      <NutritionMealModal isOpen={true} onClose={jest.fn()} onSave={jest.fn()} />
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveAttribute('aria-labelledby');
+  });
+});
+
 describe('SleepLogModal aria-labels', () => {
   it('quality rating buttons have aria-label and aria-pressed', () => {
     renderWithTheme(
