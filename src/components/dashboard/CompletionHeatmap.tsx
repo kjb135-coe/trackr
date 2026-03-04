@@ -26,7 +26,7 @@ function getColor(percentage: number, isDark: boolean): string {
   return isDark ? '#22c55e' : '#22c55e';
 }
 
-export const CompletionHeatmap: React.FC<CompletionHeatmapProps> = ({ data }) => {
+export const CompletionHeatmap: React.FC<CompletionHeatmapProps> = React.memo(({ data }) => {
   const theme = useThemeClasses();
   const [tooltip, setTooltip] = useState<{ x: number; y: number; day: HeatmapDay } | null>(null);
 
@@ -162,4 +162,6 @@ export const CompletionHeatmap: React.FC<CompletionHeatmapProps> = ({ data }) =>
       </div>
     </div>
   );
-};
+});
+
+CompletionHeatmap.displayName = 'CompletionHeatmap';
