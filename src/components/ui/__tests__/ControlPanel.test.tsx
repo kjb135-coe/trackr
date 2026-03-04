@@ -3,23 +3,27 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ControlPanel } from '../ControlPanel';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
-import * as habitStore from '../../../stores/habitStore';
+import * as preferencesStore from '../../../stores/preferencesStore';
 
-// Mock the habit store
-jest.mock('../../../stores/habitStore');
+// Mock framer-motion so AnimatePresence renders children synchronously in jsdom
+jest.mock('framer-motion', () => {
+  const React = require('react');
+  const motion = {
+    div: React.forwardRef(({ children, initial, animate, exit, transition, whileHover, whileTap, variants, layout, ...props }: any, ref: any) => (
+      <div ref={ref} {...props}>{children}</div>
+    )),
+    button: React.forwardRef(({ children, initial, animate, exit, transition, whileHover, whileTap, variants, layout, ...props }: any, ref: any) => (
+      <button ref={ref} {...props}>{children}</button>
+    )),
+  };
+  return {
+    motion,
+    AnimatePresence: ({ children }: any) => <>{children}</>,
+  };
+});
 
-// Mock feature components
-jest.mock('../../features/WeeklyProgress', () => ({
-  WeeklyProgress: () => <div data-testid="weekly-progress">Weekly Progress</div>
-}));
-
-jest.mock('../../features/HabitInsights', () => ({
-  HabitInsights: () => <div data-testid="habit-insights">Habit Insights</div>
-}));
-
-jest.mock('../../features/SocialHub', () => ({
-  SocialHub: () => <div data-testid="social-hub">Social Hub</div>
-}));
+// Mock the preferences store
+jest.mock('../../../stores/preferencesStore');
 
 jest.mock('../../modals/WeeklyGoalModal', () => ({
   WeeklyGoalModal: ({ isOpen, onClose, onSave, currentGoal }: any) => {
@@ -38,7 +42,7 @@ const mockHabits = [
   {
     id: '1',
     name: 'Exercise',
-    emoji: '💪',
+    emoji: '',
     category: 'Health',
     streak: 5,
     bestStreak: 10,
@@ -64,8 +68,8 @@ describe('ControlPanel', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    (habitStore.useHabitStore as jest.Mock).mockReturnValue({
+
+    (preferencesStore.usePreferencesStore as unknown as jest.Mock).mockReturnValue({
       preferences: {
         weeklyGoal: 85,
         theme: 'dark'
@@ -88,7 +92,7 @@ describe('ControlPanel', () => {
 
   it('opens when gear button is clicked', async () => {
     const user = userEvent.setup();
-    
+
     renderWithTheme(
       <ControlPanel
         onAddHabit={mockOnAddHabit}
@@ -101,13 +105,13 @@ describe('ControlPanel', () => {
     await user.click(gearButton);
 
     await waitFor(() => {
-      expect(screen.getByText('ACTIONS')).toBeInTheDocument();
+      expect(screen.getByText('Actions')).toBeInTheDocument();
     });
   });
 
   it('calls onAddHabit when Add Habit is clicked', async () => {
     const user = userEvent.setup();
-    
+
     renderWithTheme(
       <ControlPanel
         onAddHabit={mockOnAddHabit}
@@ -132,7 +136,7 @@ describe('ControlPanel', () => {
 
   it('shows weekly goal modal when goal button is clicked', async () => {
     const user = userEvent.setup();
-    
+
     renderWithTheme(
       <ControlPanel
         onAddHabit={mockOnAddHabit}
@@ -146,11 +150,11 @@ describe('ControlPanel', () => {
     await user.click(gearButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Weekly Goal/)).toBeInTheDocument();
+      expect(screen.getByText('Set Goal (85%)')).toBeInTheDocument();
     });
 
     // Click goal button
-    const goalButton = screen.getByText(/Weekly Goal/);
+    const goalButton = screen.getByText('Set Goal (85%)');
     await user.click(goalButton);
 
     await waitFor(() => {
@@ -160,7 +164,7 @@ describe('ControlPanel', () => {
 
   it('updates preferences when goal is saved', async () => {
     const user = userEvent.setup();
-    
+
     renderWithTheme(
       <ControlPanel
         onAddHabit={mockOnAddHabit}
@@ -174,10 +178,10 @@ describe('ControlPanel', () => {
     await user.click(gearButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Weekly Goal/)).toBeInTheDocument();
+      expect(screen.getByText('Set Goal (85%)')).toBeInTheDocument();
     });
 
-    const goalButton = screen.getByText(/Weekly Goal/);
+    const goalButton = screen.getByText('Set Goal (85%)');
     await user.click(goalButton);
 
     await waitFor(() => {

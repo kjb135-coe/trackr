@@ -15,7 +15,7 @@ const mockHabits: HabitV2[] = [
     streak: 5,
     bestStreak: 10,
     completions: {
-      '2025-08-06': { completed: true, date: '2025-08-06' }
+      '2025-08-06': { completed: true }
     },
     createdAt: new Date('2025-08-01'),
     settings: { difficulty: 'medium' },
@@ -105,7 +105,7 @@ describe('HabitCalendarGrid', () => {
         />
       );
 
-      expect(screen.getByText(/85% goal/)).toBeInTheDocument();
+      expect(screen.getByText(/Weekly goal: 85%/)).toBeInTheDocument();
       expect(screen.getByText(/completed/)).toBeInTheDocument();
     });
 
