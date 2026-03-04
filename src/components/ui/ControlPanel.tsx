@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Plus, Brain, Calendar, Users, TrendingUp } from 'lucide-react';
+import { Settings, Plus, Calendar, TrendingUp } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
-import { WeeklyProgress } from '../features/WeeklyProgress';
-import { HabitInsights } from '../features/HabitInsights';
-import { SocialHub } from '../features/SocialHub';
-import { WeeklyGoalModal } from './WeeklyGoalModal';
+import { WeeklyGoalModal } from '../modals/WeeklyGoalModal';
 import { HabitV2 } from '../../types';
-import { useHabitStore } from '../../stores/habitStore';
+import { usePreferencesStore } from '../../stores/preferencesStore';
 
 interface ControlPanelProps {
   onAddHabit: () => void;
@@ -18,12 +15,11 @@ interface ControlPanelProps {
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, onViewMonthly }) => {
   const [isOpen, setIsOpen] = useState(false); // Collapsed by default
-  const [activeFeature, setActiveFeature] = useState<string | null>(null);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const theme = useThemeClasses();
-  const { preferences, updatePreferences } = useHabitStore();
+  const { preferences, updatePreferences } = usePreferencesStore();
 
-  const handleGoalUpdate = async (newGoal: number) => {
+  const handleGoalUpdate = async (newGoal: number | undefined) => {
     await updatePreferences({ weeklyGoal: newGoal });
   };
 
@@ -102,50 +98,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, 
                 </label>
                 <div className="space-y-2">
                   <button
-                    onClick={() => {
-                      setActiveFeature('weekly');
-                      setIsOpen(false);
-                    }}
-                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} 
-                      w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors`}
-                  >
-                    <TrendingUp className="w-4 h-4" />
-                    Weekly Progress
-                  </button>
-                  <button
                     onClick={() => setShowGoalModal(true)}
-                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} 
+                    className={`${theme.isDark ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}
                       w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors`}
                   >
                     <TrendingUp className="w-4 h-4" />
                     {preferences.weeklyGoal ? `Set Goal (${preferences.weeklyGoal}%)` : 'Set Weekly Goal'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Future Features - De-emphasized */}
-              <div className="pt-1">
-                <div className="space-y-1">
-                  <button
-                    onClick={() => {
-                      setActiveFeature('insights');
-                      setIsOpen(false);
-                    }}
-                    className={`${theme.textSecondary} hover:${theme.textPrimary} w-full flex items-center gap-2 px-3 py-1 text-xs rounded-lg transition-colors opacity-60`}
-                  >
-                    <Brain className="w-3 h-3 text-purple-400" />
-                    <span className="flex-1 text-left">Insights</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setActiveFeature('social');
-                      setIsOpen(false);
-                    }}
-                    className={`${theme.textSecondary} hover:${theme.textPrimary} w-full flex items-center gap-2 px-3 py-1 text-xs rounded-lg transition-colors opacity-60`}
-                  >
-                    <Users className="w-3 h-3 text-cyan-400" />
-                    <span className="flex-1 text-left">Social</span>
                   </button>
                 </div>
               </div>
@@ -173,20 +131,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ onAddHabit, habits, 
         onClose={() => setShowGoalModal(false)}
         currentGoal={preferences.weeklyGoal || 85}
         onSave={handleGoalUpdate}
-      />
-      
-      {/* Feature Modals */}
-      <WeeklyProgress 
-        isOpen={activeFeature === 'weekly'} 
-        onClose={() => setActiveFeature(null)} 
-      />
-      <HabitInsights 
-        isOpen={activeFeature === 'insights'} 
-        onClose={() => setActiveFeature(null)} 
-      />
-      <SocialHub 
-        isOpen={activeFeature === 'social'} 
-        onClose={() => setActiveFeature(null)} 
       />
     </div>
   );

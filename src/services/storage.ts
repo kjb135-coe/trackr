@@ -1,3 +1,9 @@
+/**
+ * @deprecated — Replaced by IndexedDB (habitRepository) + chrome.storage.sync
+ * (preferencesRepository, achievementRepository). Kept only for one-time
+ * migration in src/db/migration.ts. Do not use in new code.
+ */
+
 import { HabitV2, UserPreferencesV2, Achievement } from '../types';
 import { logger } from '../utils/logger';
 

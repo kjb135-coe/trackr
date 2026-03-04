@@ -7,7 +7,7 @@ interface WeeklyGoalModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentGoal?: number;
-  onSave: (goal: number) => void;
+  onSave: (goal: number | undefined) => void;
 }
 
 export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
@@ -21,6 +21,11 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
 
   const handleSave = () => {
     onSave(goal);
+    onClose();
+  };
+
+  const handleRemoveGoal = () => {
+    onSave(undefined);
     onClose();
   };
 
@@ -110,7 +115,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
                     [&::-moz-range-thumb]:border-none
                     [&::-moz-range-thumb]:shadow-lg`}
                 />
-                
+
                 {/* Quick preset buttons */}
                 <div className="flex gap-2 justify-center">
                   {[60, 70, 80, 85, 90].map((preset) => (
@@ -132,7 +137,7 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
               {/* Description */}
               <div className={`text-sm ${theme.textSecondary} p-4 ${theme.isDark ? 'bg-gray-800/50' : 'bg-gray-50'} rounded-lg`}>
                 <p>
-                  Setting a weekly goal helps you stay motivated and track your progress. 
+                  Setting a weekly goal helps you stay motivated and track your progress.
                   A progress bar will appear when you set your goal.
                 </p>
               </div>
@@ -153,6 +158,22 @@ export const WeeklyGoalModal: React.FC<WeeklyGoalModalProps> = ({
                 Save Goal
               </button>
             </div>
+
+            {/* Remove Goal */}
+            {currentGoal && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handleRemoveGoal}
+                  className={`text-sm ${
+                    theme.isDark
+                      ? 'text-red-400 hover:text-red-300'
+                      : 'text-red-500 hover:text-red-600'
+                  } transition-colors`}
+                >
+                  Remove Goal
+                </button>
+              </div>
+            )}
           </motion.div>
         </>
       )}

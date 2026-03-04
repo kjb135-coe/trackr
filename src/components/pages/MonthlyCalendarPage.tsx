@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns';
 import { HabitV2 } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { useHabitStore } from '../../stores/habitStore';
+import { usePreferencesStore } from '../../stores/preferencesStore';
 
-interface MonthlyCalendarPageProps {
-  habits: HabitV2[];
-  onBack: () => void;
-  installDate?: Date;
-}
-
-export const MonthlyCalendarPage: React.FC<MonthlyCalendarPageProps> = ({ habits, onBack, installDate }) => {
+export const MonthlyCalendarPage: React.FC = () => {
+  const { habits } = useHabitStore();
+  const { preferences } = usePreferencesStore();
+  const installDate = preferences.installDate;
+  const navigate = useNavigate();
   const theme = useThemeClasses();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoveredDay, setHoveredDay] = useState<Date | null>(null);
@@ -84,7 +85,7 @@ export const MonthlyCalendarPage: React.FC<MonthlyCalendarPageProps> = ({ habits
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={onBack}
+            onClick={() => navigate('/')}
             className={`${theme.btnSecondary} text-sm flex items-center gap-2`}
           >
             <ArrowLeft className="w-4 h-4" />

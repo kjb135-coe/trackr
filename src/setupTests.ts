@@ -3,31 +3,39 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+import 'fake-indexeddb/auto';
+
+// Polyfill structuredClone for fake-indexeddb (not available in jsdom)
+if (typeof globalThis.structuredClone === 'undefined') {
+  globalThis.structuredClone = <T>(val: T): T => JSON.parse(JSON.stringify(val));
+}
 
 // Mock window.matchMedia
+// NOTE: Use plain functions, not jest.fn() — CRA's jest config has resetMocks: true
+// which calls mockReset() on all jest.fn() instances before each test, removing implementations.
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: (query: string) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }),
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+global.ResizeObserver = class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as any;
 
 // Mock IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-}));
+global.IntersectionObserver = class {
+  observe() {}
+  disconnect() {}
+} as any;

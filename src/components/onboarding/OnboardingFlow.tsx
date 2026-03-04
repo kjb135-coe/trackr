@@ -4,17 +4,18 @@ import { ChevronRight, Sparkles, Zap, Target, TrendingUp } from 'lucide-react';
 import { Button, Input, Card } from '../ui';
 import { HABIT_TEMPLATES, habitService } from '../../services/habitService';
 import { useHabitStore } from '../../stores/habitStore';
+import { usePreferencesStore } from '../../stores/preferencesStore';
 
 interface OnboardingFlowProps {
   isOpen: boolean;
-  onComplete: () => void;
 }
 
-export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen, onComplete }) => {
+export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen }) => {
   const [step, setStep] = useState(0);
   const [userName, setUserName] = useState('');
   const [selectedHabits, setSelectedHabits] = useState<string[]>([]);
-  const { updatePreferences, addHabit } = useHabitStore();
+  const { addHabit } = useHabitStore();
+  const { updatePreferences } = usePreferencesStore();
 
   // Extract name from origin/hostname
   useEffect(() => {
@@ -262,8 +263,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ isOpen, onComple
       const habit = habitService.createHabit(template);
       await addHabit(habit);
     }
-
-    onComplete();
   };
 
   const currentStep = steps[step];
