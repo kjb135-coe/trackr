@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { NutritionPage } from '../NutritionPage';
 import * as nutritionStore from '../../../stores/nutritionStore';
@@ -91,6 +92,41 @@ describe('NutritionPage', () => {
 
     renderWithProviders(<NutritionPage />);
     expect(screen.getByText('No nutrition data yet')).toBeInTheDocument();
+  });
+
+  it('displays error banner when store has an error', () => {
+    (nutritionStore.useNutritionStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Failed to load nutrition data',
+      loadEntries: mockLoadEntries,
+      addEntry: jest.fn(),
+      updateEntry: jest.fn(),
+      deleteEntry: jest.fn(),
+      clearError: jest.fn(),
+    });
+
+    renderWithProviders(<NutritionPage />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load nutrition data');
+  });
+
+  it('calls clearError when dismiss button is clicked', async () => {
+    const mockClearError = jest.fn();
+    (nutritionStore.useNutritionStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Something went wrong',
+      loadEntries: mockLoadEntries,
+      addEntry: jest.fn(),
+      updateEntry: jest.fn(),
+      deleteEntry: jest.fn(),
+      clearError: mockClearError,
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<NutritionPage />);
+    await user.click(screen.getByLabelText('Dismiss error'));
+    expect(mockClearError).toHaveBeenCalled();
   });
 
   it('shows today stats section', () => {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { JournalPage } from '../JournalPage';
 import * as journalStore from '../../../stores/journalStore';
@@ -93,6 +94,41 @@ describe('JournalPage', () => {
 
     renderWithProviders(<JournalPage />);
     expect(screen.getByText('No journal entries yet')).toBeInTheDocument();
+  });
+
+  it('displays error banner when store has an error', () => {
+    (journalStore.useJournalStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Failed to load journal entries',
+      loadEntries: mockLoadEntries,
+      addEntry: jest.fn(),
+      updateEntry: jest.fn(),
+      deleteEntry: jest.fn(),
+      clearError: jest.fn(),
+    });
+
+    renderWithProviders(<JournalPage />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load journal entries');
+  });
+
+  it('calls clearError when dismiss button is clicked', async () => {
+    const mockClearError = jest.fn();
+    (journalStore.useJournalStore as unknown as jest.Mock).mockReturnValue({
+      entries: mockEntries,
+      isLoading: false,
+      error: 'Something went wrong',
+      loadEntries: mockLoadEntries,
+      addEntry: jest.fn(),
+      updateEntry: jest.fn(),
+      deleteEntry: jest.fn(),
+      clearError: mockClearError,
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<JournalPage />);
+    await user.click(screen.getByLabelText('Dismiss error'));
+    expect(mockClearError).toHaveBeenCalled();
   });
 
   it('shows search input when entries exist', () => {

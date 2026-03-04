@@ -4,6 +4,7 @@ import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { HabitV2, UserPreferencesV2 } from '../../types';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import { logger } from '../../utils/logger';
 
 // Debug grid alignment (dev-only, enabled via REACT_APP_DEBUG_GRID=true)
 const DEBUG_GRID = process.env.NODE_ENV === 'development' && process.env.REACT_APP_DEBUG_GRID === 'true';
@@ -188,7 +189,7 @@ export const HabitCalendarGrid: React.FC<HabitCalendarGridProps> = ({
         const x1 = Math.round(hd.getBoundingClientRect().left);
         const x2 = Math.round(bd.getBoundingClientRect().left);
         if (Math.abs(x1 - x2) > 1 && DEBUG_GRID) {
-          console.warn('Grid misalignment at column', i, { headerLeft: x1, bodyLeft: x2 });
+          logger.warn('HabitCalendarGrid', `Grid misalignment at column ${i}`, { headerLeft: x1, bodyLeft: x2 });
         }
       });
     };
